@@ -21,7 +21,7 @@ onMounted(() => addEventListener('keydown', onKey)); onBeforeUnmount(() => remov
 <template>
   <header class="topbar">
     <router-link to="/" class="brand"><span class="brand-mark"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="5" cy="12" r="2.4"/><circle cx="19" cy="5" r="2.4"/><circle cx="19" cy="19" r="2.4"/><path d="M7.3 11 16.8 6.1M7.3 13l9.5 4.9"/></svg></span><span class="brand-text">AXON<small>engineering, illuminated</small></span></router-link>
-        <button class="icon menu-btn nav-toggle" @click="toggleSide" :aria-label="state.sideCollapsed ? 'Show sidebar' : 'Hide sidebar'" :title="state.sideCollapsed ? 'Show sidebar' : 'Hide sidebar'"><Icon :name="state.sideCollapsed ? 'panelOpen' : 'panelClose'" /></button>
+        <button class="icon menu-btn nav-toggle" @click="toggleSide" :aria-label="state.sideCollapsed ? 'Expand sidebar' : 'Collapse sidebar'" :title="state.sideCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"><Icon :name="state.sideCollapsed ? 'panelOpen' : 'panelClose'" /></button>
     <form class="search" @submit.prevent="go" role="search">
       <input ref="searchEl" v-model="q" type="search" :placeholder="`Search ${chapterCount} chapters — page tables, Raft, attention…`" aria-label="Search chapters" />
       <kbd>⌘K</kbd>
@@ -37,19 +37,19 @@ onMounted(() => addEventListener('keydown', onKey)); onBeforeUnmount(() => remov
 
   <div class="shell" :class="{ collapsed: state.sideCollapsed }">
     <aside class="side" :class="{ open }">
-      <router-link to="/" class="side-link"><span class="side-ico"><Icon name="home" :size="15" /></span>Overview</router-link>
-      <router-link to="/library" class="side-link"><span class="side-ico"><Icon name="rss" :size="15" /></span>Tech Library</router-link>
-      <router-link to="/labs" class="side-link"><span class="side-ico"><Icon name="flask" :size="15" /></span>Interactive Labs</router-link>
+      <router-link to="/" class="side-link" title="Overview"><span class="side-ico"><Icon name="home" :size="15" /></span><span class="side-txt">Overview</span></router-link>
+      <router-link to="/library" class="side-link" title="Tech Library"><span class="side-ico"><Icon name="rss" :size="15" /></span><span class="side-txt">Tech Library</span></router-link>
+      <router-link to="/labs" class="side-link" title="Interactive Labs"><span class="side-ico"><Icon name="flask" :size="15" /></span><span class="side-txt">Interactive Labs</span></router-link>
 
       <div class="side-label">Tracks</div>
       <div v-for="t in tracks" :key="t.id" class="side-track" :class="{ open: expanded.has(t.id) }">
-        <button class="side-link side-track-head" :class="{ active: route.params.track === t.id }" @click="toggle(t.id); router.push(`/track/${t.id}`)">
+        <button class="side-link side-track-head" :class="{ active: route.params.track === t.id }" @click="toggle(t.id); router.push(`/track/${t.id}`)" :title="t.name">
           <span class="side-ico" :style="{ color: t.color, background: `color-mix(in srgb, ${t.color} 14%, transparent)` }"><Icon :name="t.icon" :size="15" /></span>
-          <span>{{ t.name }}</span>
+          <span class="side-txt">{{ t.name }}</span>
           <span class="side-pct">{{ pct(t) }}%</span>
           <span class="side-chev"><Icon name="right" :size="13" /></span>
         </button>
-        <div v-if="expanded.has(t.id)" class="side-chapters">
+        <div v-if="expanded.has(t.id) && !state.sideCollapsed" class="side-chapters">
           <template v-for="(c, i) in t.chapters" :key="c.slug">
           <router-link :to="`/read/${t.id}/${c.slug}`" class="side-ch" :class="{ cur: route.params.chapter === c.slug }">
             <span class="num" :class="{ done: state.done[`${t.id}/${c.slug}`] }">

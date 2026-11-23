@@ -156,16 +156,13 @@ const noteLabel = { notice: 'Notice', key: 'Key idea', good: 'Good to know', war
   <div ref="root" class="scene" :class="{ focus: visible, lesson, compact }">
     <div class="sc-main">
       <div v-if="lesson && head" class="ls-head">
-        <div class="ls-crumb"><span class="ls-trk" :style="{ color: head.color }">{{ head.track }}</span><span>/</span><span>{{ head.module }}</span><span>/</span><span>Lesson {{ head.n }} of {{ head.of }}</span></div>
-        <div class="ls-row">
-          <h1>{{ head.title }}</h1>
-          <div class="ls-chips"><span class="lchip">{{ head.minutes }} min</span><span class="lchip">{{ steps.length }} steps</span><span v-if="head.done" class="lchip ok">✓ done</span></div>
-        </div>
+        <div class="ls-kicker"><span>Interactive lesson<template v-if="head.of > 1"> {{ head.n }} of {{ head.of }}</template></span><i></i><span>{{ steps.length }} steps</span><template v-if="head.done"><i></i><span class="ls-ok">✓ Completed</span></template></div>
+        <h2>{{ head.title }}</h2>
         <p v-if="sub" class="ls-sub">{{ sub }}</p>
       </div>
       <div class="sc-head">
         <div v-if="!lesson"><div class="sc-title">{{ title }}</div><div v-if="sub" class="sc-sub">{{ sub }}</div></div>
-        <div v-else class="ls-tabs"><button class="on">Interactive lesson</button><button @click="emit('deepdive')">Deep dive ↓</button></div>
+        <div v-else class="ls-progress"><div :style="{ width: (100 * (cur + 1) / steps.length) + '%' }"></div></div>
         <div class="sc-ctl">
           <button class="btn sm" title="Replay (R)" @click="cur = 0; playing = false">↺ Replay</button>
           <button class="btn sm" title="Play / pause (Space)" @click="toggle">{{ playing ? '❚❚ Pause' : '▶ Play' }}</button>
@@ -234,20 +231,21 @@ const noteLabel = { notice: 'Notice', key: 'Key idea', good: 'Good to know', war
     </div>
 
     <aside class="sc-side">
-      <div class="sc-stepno"><span>Step {{ cur + 1 }} / {{ steps.length }}</span><span v-if="step.tag" class="sc-tag">{{ step.tag }}</span></div>
+      <div class="sc-stepno"><span>Step {{ cur + 1 }} of {{ steps.length }}</span><span v-if="step.tag" class="sc-tag">{{ step.tag }}</span></div>
+      <div v-if="lesson && cur > 0" class="sc-prev"><span>So far</span>{{ steps[cur - 1].title }}</div>
       <h4>{{ step.title }}</h4>
       <div class="sc-body" v-html="step.body" />
       <div v-if="step.note" class="sc-note" :class="step.note.kind || 'notice'"><b>{{ noteLabel[step.note.kind || 'notice'] }}</b><span v-html="step.note.text" /></div>
       <div v-if="step.changed?.length" class="sc-changed"><h6>What changed</h6><div v-for="c in step.changed" :key="c">+ {{ c }}</div></div>
       <div class="sc-nav">
         <button class="btn" :disabled="cur === 0" @click="back">← Back</button>
-        <router-link v-if="lesson && cur === steps.length - 1 && nextLink" :to="nextLink" class="btn primary">Next lesson →</router-link>
+        <router-link v-if="lesson && cur === steps.length - 1 && nextLink" :to="nextLink" class="btn primary">{{ head?.nextLabel || 'Next lesson' }} →</router-link>
         <button v-else class="btn primary" :disabled="cur === steps.length - 1" @click="next">{{ cur < steps.length - 1 ? 'Next: ' + (steps[cur + 1].short || steps[cur + 1].title) : 'Done' }} →</button>
       </div>
       <div class="sc-keys"><kbd>←</kbd><kbd>→</kbd> step · <kbd>Space</kbd> play · <kbd>R</kbd> replay</div>
       <div v-if="lesson" class="ls-learn">
-        <h6>In this lesson</h6>
-        <button v-for="(s, i) in steps" :key="i" :class="{ seen: i <= seen, on: i === cur }" @click="go(i)"><i>{{ i <= seen ? '✓' : '' }}</i>{{ s.title }}</button>
+        <h6>The whole flow</h6>
+        <button v-for="(s, i) in steps" :key="i" :class="{ seen: i < cur, on: i === cur }" @click="go(i)"><i>{{ i < cur ? '✓' : i + 1 }}</i><span>{{ s.title }}</span></button>
       </div>
     </aside>
 
