@@ -10,8 +10,8 @@ const guide = computed(() => ({ what: p.props.what || GUIDES[p.name]?.what, step
 </script>
 
 <template>
-  <figure class="widget-frame" :class="{ wide: name === 'Architecture' || name === 'ClassDiagram' }">
-    <div v-if="guide.what" class="w-guide">
+  <figure class="widget-frame" :class="{ wide: ['Architecture','ClassDiagram','Scene'].includes(name), 'scene-frame': name === 'Scene' }">
+    <div v-if="guide.what && name !== 'Scene'" class="w-guide">
       <div><h5><Icon name="info" :size="12" /> What you're looking at</h5>{{ guide.what }}</div>
       <div><h5><Icon name="target" :size="12" /> Try this</h5><ol><li v-for="s in guide.steps" :key="s">{{ s }}</li></ol></div>
     </div>

@@ -1,4 +1,4 @@
-// TechForge scraper API: aggregates engineering blogs (RSS/Atom), searches Hacker News,
+// Axon scraper API: aggregates engineering blogs (RSS/Atom), searches Hacker News,
 // and extracts clean readable article text with Mozilla Readability.
 import express from 'express'
 import Parser from 'rss-parser'
@@ -17,7 +17,7 @@ import { SOURCES } from './sources.js'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const app = express()
 app.use(express.json())
-const UA = 'Mozilla/5.0 (compatible; TechForgeReader/1.0)'
+const UA = 'Mozilla/5.0 (compatible; AxonReader/1.0)'
 const parser = new Parser({ timeout: 15000, headers: { 'User-Agent': UA } })
 
 // ---------- tiny TTL cache persisted to disk ----------
@@ -143,4 +143,4 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 const PORT = process.env.API_PORT || (process.env.NODE_ENV === 'production' && process.env.PORT) || 3001
-app.listen(PORT, () => console.log(`TechForge API on http://localhost:${PORT}`))
+app.listen(PORT, () => console.log(`Axon API on http://localhost:${PORT}`))

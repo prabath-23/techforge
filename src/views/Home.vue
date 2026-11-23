@@ -1,59 +1,85 @@
 <script setup>
 import { computed } from 'vue'
-import { tracks } from '../lib/content.js'
+import { tracks, getChapter } from '../lib/content.js'
 import { state } from '../lib/progress.js'
 import Icon from '../components/Icon.vue'
+import Scene from '../components/widgets/Scene.vue'
 
-const total = computed(() => tracks.reduce((n, t) => n + t.chapters.length, 0))
-const read = computed(() => Object.values(state.done).filter(Boolean).length)
-const hours = computed(() => Math.round(tracks.reduce((n, t) => n + t.chapters.reduce((m, c) => m + c.minutes, 0), 0) / 60))
-const quizzes = computed(() => Object.values(state.quiz).filter(Boolean).length)
-const next = computed(() => { for (const t of tracks) for (const c of t.chapters) if (!state.done[`${t.id}/${c.slug}`]) return { t, c } })
-const planned = computed(() => tracks.reduce((n, t) => n + (t.planned?.length || 0), 0))
+const modules = computed(() => tracks.reduce((n, t) => n + t.chapters.length, 0))
+const lessonCount = computed(() => tracks.reduce((n, t) => n + t.chapters.reduce((m, c) => m + (c.lessons?.length || 0), 0), 0))
 const doneIn = t => t.chapters.filter(c => state.done[`${t.id}/${c.slug}`]).length
+const next = computed(() => { for (const t of tracks) for (const c of t.chapters) if (!state.done[`${t.id}/${c.slug}`]) return { t, c } })
+const started = computed(() => Object.values(state.done).some(Boolean))
+
+// A real lesson, playing on its own, as the hero illustration.
+const demo = computed(() => {
+  const ch = getChapter('networking', 'http'); const m = ch?.body.match(/^::widget Scene (.+)$/m)
+  try { return m ? JSON.parse(m[1]) : null } catch { return null }
+})
+const lessonsIn = t => t.chapters.reduce((n, c) => n + (c.lessons?.length || 0), 0)
+const HOW = [
+  { n: '01', t: 'Watch it happen', d: 'Every lesson opens on a live illustration: packets moving between machines, arrays being searched, processes being scheduled.' },
+  { n: '02', t: 'Step through it', d: 'Go one idea at a time with ← and →. Each step changes one thing, explains why, and updates the numbers that matter.' },
+  { n: '03', t: 'Go deeper', d: 'Every module has a full chapter behind it with real examples, code, history and the trade-offs engineers argue about.' },
+  { n: '04', t: 'Check yourself', d: 'Short questions after each topic, interview angles, and progress that remembers where you stopped.' },
+]
 </script>
 
 <template>
-  <div class="page">
-    <section class="hero">
-      <span class="pill"><i></i>{{ total }} chapters · {{ hours }} hours of deep reading</span>
-      <h1>Learn computer science <span class="grad">the way it actually works.</span></h1>
-      <p class="lede">A book-length, first-principles curriculum from the bootloader to transformers, with interactive simulations of the real mechanisms and a live library of engineering writing from across the industry.</p>
-      <div class="hero-actions">
-        <router-link v-if="next" class="btn" :to="`/read/${next.t.id}/${next.c.slug}`">
-          {{ read ? 'Continue' : 'Start' }}: {{ next.c.title }} <Icon name="arrow" :size="16" />
-        </router-link>
-        <router-link class="btn ghost" to="/labs"><Icon name="flask" :size="16" /> Explore the labs</router-link>
+  <div class="ax-home">
+    <section class="ax-hero">
+      <div class="ax-hero-copy">
+        <span class="ax-eyebrow"><i></i> Free · interactive · {{ tracks.length }} tracks</span>
+        <h1>See how computers <em>really</em> work.</h1>
+        <p>Axon teaches computer science the way you'd explain it at a whiteboard: one idea at a time, drawn out, with real systems as examples. From the boot loader to transformers, from a single packet to a planet-scale chat app.</p>
+        <div class="ax-cta">
+          <router-link v-if="next" class="ax-btn primary" :to="`/read/${next.t.id}/${next.c.slug}`">{{ started ? 'Continue learning' : 'Start learning' }} <Icon name="arrow" :size="16" /></router-link>
+          <a class="ax-btn" href="#tracks">Browse tracks</a>
+        </div>
+        <div class="ax-proof">
+          <div><b>{{ modules }}</b><span>modules</span></div>
+          <div><b>{{ lessonCount }}</b><span>interactive lessons</span></div>
+          <div><b>{{ tracks.length }}</b><span>tracks</span></div>
+        </div>
+      </div>
+      <div class="ax-hero-demo">
+        <div class="ax-window">
+          <div class="ax-window-bar"><i></i><i></i><i></i><span>Lesson · What happens when you open a URL</span></div>
+          <Scene v-if="demo" v-bind="demo" compact autoplay />
+        </div>
       </div>
     </section>
 
-    <div class="stats">
-      <div class="stat"><b>{{ tracks.length }}</b><span>Tracks</span></div>
-      <div class="stat"><b>{{ total }}<small v-if="planned" class="meta"> + {{ planned }} planned</small></b><span>Chapters</span></div>
-      <div class="stat"><b>{{ read }}<small class="meta"> / {{ total }}</small></b><span>Completed</span></div>
-      <div class="stat"><b>{{ quizzes }}</b><span>Quiz questions correct</span></div>
-    </div>
+    <section class="ax-how">
+      <h2>How a lesson works</h2>
+      <div class="ax-how-grid">
+        <div v-for="h in HOW" :key="h.n" class="ax-how-card"><span>{{ h.n }}</span><h3>{{ h.t }}</h3><p>{{ h.d }}</p></div>
+      </div>
+    </section>
 
-    <div class="section-head"><h2>Tracks</h2><span class="meta">Read in order, or jump to what you need</span></div>
-    <div class="grid">
-      <router-link v-for="t in tracks" :key="t.id" :to="`/track/${t.id}`" class="card" :style="{ '--c': t.color }">
-        <div class="card-top">
-          <div class="card-icon" :style="{ color: t.color }"><Icon :name="t.icon" :size="22" /></div>
-          <div><h3>{{ t.name }}</h3><div class="card-sub">{{ t.chapters.length ? `${t.chapters.length} chapters` : 'Coming soon' }}<template v-if="t.planned?.length"> · {{ t.planned.length }} planned</template></div></div>
-        </div>
-        <p>{{ t.blurb }}</p>
-        <div class="card-foot">
-          <div class="meter"><div :style="{ width: (100 * doneIn(t) / (t.chapters.length || 1)) + '%' }"></div></div>
-          <small>{{ doneIn(t) }}/{{ t.chapters.length }}</small>
-        </div>
-      </router-link>
-    </div>
+    <section id="tracks" class="ax-tracks">
+      <div class="ax-sec-head"><h2>Tracks</h2><p>Start anywhere. Each track builds from first principles to what top engineering teams run in production.</p></div>
+      <div class="ax-track-grid">
+        <router-link v-for="t in tracks" :key="t.id" :to="`/track/${t.id}`" class="ax-track" :style="{ '--c': t.color }">
+          <div class="ax-track-top">
+            <span class="ax-tile"><Icon :name="t.icon" :size="20" /></span>
+            <span class="ax-count">{{ t.chapters.length }} modules · {{ lessonsIn(t) }} lessons</span>
+          </div>
+          <h3>{{ t.name }}</h3>
+          <p>{{ t.blurb }}</p>
+          <div class="ax-bar"><div :style="{ width: (100 * doneIn(t) / (t.chapters.length || 1)) + '%' }"></div></div>
+        </router-link>
+      </div>
+    </section>
 
-    <div class="section-head" style="margin-top:40px"><h2>Beyond reading</h2></div>
-    <div class="features">
-      <router-link to="/labs" class="feature"><div class="f-ico"><Icon name="flask" /></div><div><h4>25 interactive labs</h4><p>Schedulers, page-table walks, Raft, consistent hashing, attention, Kubernetes reconciliation and more.</p></div></router-link>
-      <router-link to="/library" class="feature"><div class="f-ico"><Icon name="rss" /></div><div><h4>Live tech library</h4><p>Engineering blogs, Hacker News and arXiv, scraped and rendered in a clean reader you can save from.</p></div></router-link>
-      <router-link to="/search?q=interview" class="feature"><div class="f-ico"><Icon name="target" /></div><div><h4>Interview angles</h4><p>Every chapter flags what interviewers probe, plus quizzes to check understanding.</p></div></router-link>
-    </div>
+    <section class="ax-extras">
+      <router-link to="/labs" class="ax-extra"><Icon name="flask" :size="20" /><div><h3>Labs</h3><p>Sandboxes to play with schedulers, Raft, consistent hashing, attention and more.</p></div></router-link>
+      <router-link to="/library" class="ax-extra"><Icon name="rss" :size="20" /><div><h3>Library</h3><p>The best engineering writing from company blogs, Hacker News and arXiv, in a clean reader.</p></div></router-link>
+    </section>
+
+    <footer class="ax-foot">
+      <div><b>AXON</b><span>engineering, illuminated</span></div>
+      <nav><a href="#tracks">Tracks</a><router-link to="/labs">Labs</router-link><router-link to="/library">Library</router-link><router-link to="/search?q=interview">Interview prep</router-link></nav>
+    </footer>
   </div>
 </template>

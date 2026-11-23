@@ -10,7 +10,7 @@ export default createRouter({
   routes: [
     { path: '/', component: Home },
     { path: '/track/:track', component: Track },
-    { path: '/read/:track/:chapter', component: Chapter },
+    { path: '/read/:track/:chapter/:lesson?', component: Chapter },
     { path: '/library', component: Library },
     { path: '/labs', component: Labs },
     { path: '/search', component: Search },

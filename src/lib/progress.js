@@ -3,7 +3,7 @@ const load = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d }
 export const state = reactive({
   done: load('tf-done', {}),          // { "os/boot": true }
   saved: load('tf-saved', []),        // reading list from Library
-  theme: load('tf-theme', matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
+  theme: load('tf-theme', 'light'),
   quiz: load('tf-quiz', {}),
   sideCollapsed: load('tf-sideCollapsed', false),          // { "os/boot#0": true }
 })

@@ -20,8 +20,8 @@ onMounted(() => addEventListener('keydown', onKey)); onBeforeUnmount(() => remov
 
 <template>
   <header class="topbar">
-    <button class="icon menu-btn" @click="toggleSide" :aria-label="state.sideCollapsed ? 'Show sidebar' : 'Hide sidebar'" :title="state.sideCollapsed ? 'Show sidebar' : 'Hide sidebar'"><Icon :name="state.sideCollapsed ? 'panelOpen' : 'panelClose'" /></button>
-    <router-link to="/" class="brand"><span class="brand-mark"><Icon name="hammer" :size="16" :stroke="2.4" /></span><span class="brand-text">TechForge</span></router-link>
+    <router-link to="/" class="brand"><span class="brand-mark"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="5" cy="12" r="2.4"/><circle cx="19" cy="5" r="2.4"/><circle cx="19" cy="19" r="2.4"/><path d="M7.3 11 16.8 6.1M7.3 13l9.5 4.9"/></svg></span><span class="brand-text">AXON<small>engineering, illuminated</small></span></router-link>
+        <button class="icon menu-btn nav-toggle" @click="toggleSide" :aria-label="state.sideCollapsed ? 'Show sidebar' : 'Hide sidebar'" :title="state.sideCollapsed ? 'Show sidebar' : 'Hide sidebar'"><Icon :name="state.sideCollapsed ? 'panelOpen' : 'panelClose'" /></button>
     <form class="search" @submit.prevent="go" role="search">
       <input ref="searchEl" v-model="q" type="search" :placeholder="`Search ${chapterCount} chapters — page tables, Raft, attention…`" aria-label="Search chapters" />
       <kbd>⌘K</kbd>
@@ -50,11 +50,18 @@ onMounted(() => addEventListener('keydown', onKey)); onBeforeUnmount(() => remov
           <span class="side-chev"><Icon name="right" :size="13" /></span>
         </button>
         <div v-if="expanded.has(t.id)" class="side-chapters">
-          <router-link v-for="(c, i) in t.chapters" :key="c.slug" :to="`/read/${t.id}/${c.slug}`" class="side-ch">
+          <template v-for="(c, i) in t.chapters" :key="c.slug">
+          <router-link :to="`/read/${t.id}/${c.slug}`" class="side-ch" :class="{ cur: route.params.chapter === c.slug }">
             <span class="num" :class="{ done: state.done[`${t.id}/${c.slug}`] }">
               <Icon v-if="state.done[`${t.id}/${c.slug}`]" name="check" :size="12" :stroke="3" /><template v-else>{{ String(i + 1).padStart(2, '0') }}</template>
             </span>{{ c.title }}
           </router-link>
+          <div v-if="route.params.chapter === c.slug && c.lessons.length" class="side-lessons">
+            <router-link v-for="(l, j) in c.lessons" :key="j" :to="`/read/${t.id}/${c.slug}/${j + 1}`" class="side-lesson" :class="{ on: (Number(route.params.lesson) || 1) === j + 1, done: state.done[`${t.id}/${c.slug}#${j + 1}`] }">
+              <i></i>{{ l.title }}
+            </router-link>
+          </div>
+          </template>
           <div v-for="title in t.planned || []" :key="title" class="side-ch planned" :title="'Planned: ' + title"><span class="num"><Icon name="planned" :size="11" /></span>{{ title }}</div>
         </div>
       </div>

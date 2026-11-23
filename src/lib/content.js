@@ -15,7 +15,9 @@ for (const [p, raw] of Object.entries(files)) {
   const [, track, file] = p.match(/content\/([^/]+)\/(.+)\.md$/)
   const slug = file.replace(/^\d+-/, '')
   const { meta, body } = parseFront(raw)
-  ;(CHAPTERS[track] ||= []).push({ track, slug, file, title: meta.title || slug, summary: meta.summary || '', minutes: Math.max(3, Math.round(body.split(/\s+/).length / 220)), body })
+  // every Scene embedded in a chapter is one interactive lesson of that module
+  const lessons = [...body.matchAll(/^::widget Scene (.+)$/gm)].map(m => { try { const j = JSON.parse(m[1]); return { title: j.title, steps: j.steps.length } } catch { return null } }).filter(Boolean)
+  ;(CHAPTERS[track] ||= []).push({ track, slug, file, title: meta.title || slug, summary: meta.summary || '', minutes: Math.max(3, Math.round(body.split(/\s+/).length / 220)), body, lessons })
 }
 for (const t in CHAPTERS) CHAPTERS[t].sort((a, b) => a.file.localeCompare(b.file))
 

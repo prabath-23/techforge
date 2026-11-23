@@ -1,4 +1,4 @@
-# TechForge
+# Axon
 
 A book-length, first-principles engineering curriculum with interactive simulations and a live tech-article library.
 
