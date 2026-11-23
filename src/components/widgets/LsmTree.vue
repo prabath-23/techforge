@@ -4,7 +4,7 @@ import { ref } from 'vue'
 const mem = ref({}), wal = ref(0), tables = ref([]), msg = ref('Write keys, flush the memtable, then read a key and see how many SSTables are checked.'), key = ref('k3'), val = ref(1), LIMIT = 4
 function put(k = key.value, v = val.value) { mem.value = { ...mem.value, [k]: v }; wal.value++; msg.value = `PUT ${k}=${v}: append to WAL (sequential disk write, for durability) + insert into in-memory sorted memtable. O(log n), no random I/O.`
   val.value++; key.value = 'k' + Math.floor(Math.random() * 8); if (Object.keys(mem.value).length >= LIMIT) flush() }
-function del(k = key.value) { put(k, 'TOMBSTONE'); msg.value = `DELETE ${k}: written as a tombstone — the old value is removed later during compaction.` }
+function del(k = key.value) { put(k, 'TOMBSTONE'); msg.value = `DELETE ${k}: written as a tombstone, the old value is removed later during compaction.` }
 function flush() { if (!Object.keys(mem.value).length) return; const sorted = Object.fromEntries(Object.entries(mem.value).sort()); tables.value.unshift({ id: tables.value.length ? Math.max(...tables.value.map(t => t.id)) + 1 : 1, data: sorted }); mem.value = {}; wal.value = 0
   msg.value = 'Memtable full → flushed to disk as a new immutable, sorted SSTable (one sequential write). WAL truncated.' }
 function get(k = key.value) { const path = ['memtable']; if (k in mem.value) return (msg.value = `GET ${k}: found in memtable → ${mem.value[k]} (1 lookup)`)

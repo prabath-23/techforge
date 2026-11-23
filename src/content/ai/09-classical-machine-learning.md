@@ -1,15 +1,15 @@
 ---
-title: Classical Machine Learning — Trees, Boosting and Clustering
-summary: The workhorse models that still power most business predictions — linear and logistic regression, decision trees and how they choose splits, random forests, gradient boosting (XGBoost, LightGBM), k-means and other clustering, feature engineering, and why these often beat deep learning on tabular data.
+title: Classical Machine Learning: Trees, Boosting and Clustering
+summary: The workhorse models that still power most business predictions, linear and logistic regression, decision trees and how they choose splits, random forests, gradient boosting (XGBoost, LightGBM), k-means and other clustering, feature engineering, and why these often beat deep learning on tabular data.
 ---
 
-::widget Scene {"title": "Decision trees: twenty questions for data", "sub": "learn a loan-default tree, predict, then fix overfitting with a forest", "nodes": [{"id": "r", "kind": "cube", "label": "Missed payments > 2?", "x": 5.0, "y": -5.0, "color": "purple"}, {"id": "y", "kind": "cube", "label": "Debt ratio > 45%?", "x": 6.77, "y": 3.77, "color": "purple"}, {"id": "n", "kind": "cube", "label": "Income < ₹25k?", "x": 13.77, "y": -3.23, "color": "purple"}, {"id": "a", "kind": "node", "label": "38%", "x": 10.54, "y": 10.54, "size": 1.9, "color": "red"}, {"id": "bb", "kind": "node", "label": "14%", "x": 13.54, "y": 7.54, "size": 1.9, "color": "orange"}, {"id": "c", "kind": "node", "label": "6%", "x": 17.54, "y": 3.54, "size": 1.9, "color": "yellow"}, {"id": "d", "kind": "node", "label": "2%", "x": 20.54, "y": 0.54, "size": 1.9, "color": "green"}], "links": [["r", "y", {"label": "yes"}], ["r", "n", {"label": "no"}], ["y", "a"], ["y", "bb"], ["n", "c"], ["n", "d"]], "metrics": [["stage", "Stage"], ["train", "Train accuracy"], ["test", "Test accuracy"]], "steps": [{"short": "Data", "tag": "Data", "title": "10,000 past loans with features and whether they defaulted", "body": "<p>Tabular data: columns of numbers and categories.</p>", "show": ["r"], "set": {"r": {"label": "10,000 loans"}}, "metrics": {"stage": ["data"], "train": ["—"], "test": ["—"]}}, {"short": "Split", "tag": "Learn", "title": "Try every feature and threshold; pick the split that best separates defaulters", "body": "<p>Measured by Gini impurity or information gain. \"Missed payments > 2\" wins.</p>", "show": ["r"], "set": {"r": {"label": "Missed payments > 2?"}}, "metrics": {"stage": ["first split"]}}, {"short": "Recurse", "tag": "Learn", "title": "Repeat on each side", "body": "<p>Each branch gets its own best question.</p>", "show": ["r", "y", "n"], "metrics": {"stage": ["recursive splits"]}}, {"short": "Leaves", "tag": "Leaves", "title": "Leaves hold the default rate of the training loans that reach them", "body": "<p>Readable: you can explain any decision.</p>", "show": ["r", "y", "n", "a", "bb", "c", "d"], "metrics": {"stage": ["leaves"]}}, {"short": "Predict", "tag": "Predict", "title": "New applicant: no missed payments, high income", "body": "<p>No → No → 2% risk.</p>", "flow": [[["r", "n", "d"], "#22c55e", ""]], "metrics": {"stage": ["predict: 2%"]}}, {"short": "Deep", "tag": "Overfit", "title": "Let it grow 30 levels deep", "body": "<p>It memorises noise: perfect on training data, poor on new loans.</p>", "metrics": {"stage": ["deep tree"], "train": ["99%"], "test": ["71%", "bad"]}}, {"short": "Prune", "tag": "Regularise", "title": "Limit depth / minimum samples per leaf", "body": "<p>Simpler tree, better on new data.</p>", "metrics": {"train": ["86%"], "test": ["82%"]}}, {"short": "Forest", "tag": "Ensemble", "title": "Random forest: hundreds of trees on random samples, then vote", "body": "<p>Individual errors cancel out.</p>", "metrics": {"stage": ["random forest"], "test": ["86%"]}}, {"short": "Boost", "tag": "Ensemble", "title": "Gradient boosting: each new tree fixes the previous trees' errors", "body": "<p>XGBoost / LightGBM — still the strongest choice for most tabular business problems.</p>", "metrics": {"stage": ["gradient boosting"], "test": ["89%", "good"]}}, {"short": "Check", "tag": "Validate", "title": "Cross-validation, a time-based split, and fairness checks", "body": "<p>Don't leak future information; check error rates across groups.</p>", "note": {"kind": "key", "text": "Trees split on the most informative questions; single deep trees overfit; forests and boosting ensemble many trees. Validate on held-out, time-respecting data."}}]}
+::widget Scene {"title": "Decision trees: twenty questions for data", "sub": "learn a loan-default tree, predict, then fix overfitting with a forest", "nodes": [{"id": "r", "kind": "cube", "label": "Missed payments > 2?", "x": 5.0, "y": -5.0, "color": "purple"}, {"id": "y", "kind": "cube", "label": "Debt ratio > 45%?", "x": 6.77, "y": 3.77, "color": "purple"}, {"id": "n", "kind": "cube", "label": "Income < ₹25k?", "x": 13.77, "y": -3.23, "color": "purple"}, {"id": "a", "kind": "node", "label": "38%", "x": 10.54, "y": 10.54, "size": 1.9, "color": "red"}, {"id": "bb", "kind": "node", "label": "14%", "x": 13.54, "y": 7.54, "size": 1.9, "color": "orange"}, {"id": "c", "kind": "node", "label": "6%", "x": 17.54, "y": 3.54, "size": 1.9, "color": "yellow"}, {"id": "d", "kind": "node", "label": "2%", "x": 20.54, "y": 0.54, "size": 1.9, "color": "green"}], "links": [["r", "y", {"label": "yes"}], ["r", "n", {"label": "no"}], ["y", "a"], ["y", "bb"], ["n", "c"], ["n", "d"]], "metrics": [["stage", "Stage"], ["train", "Train accuracy"], ["test", "Test accuracy"]], "steps": [{"short": "Data", "tag": "Data", "title": "10,000 past loans with features and whether they defaulted", "body": "<p>Tabular data: columns of numbers and categories.</p>", "show": ["r"], "set": {"r": {"label": "10,000 loans"}}, "metrics": {"stage": ["data"], "train": ["-"], "test": ["-"]}}, {"short": "Split", "tag": "Learn", "title": "Try every feature and threshold; pick the split that best separates defaulters", "body": "<p>Measured by Gini impurity or information gain. \"Missed payments > 2\" wins.</p>", "show": ["r"], "set": {"r": {"label": "Missed payments > 2?"}}, "metrics": {"stage": ["first split"]}}, {"short": "Recurse", "tag": "Learn", "title": "Repeat on each side", "body": "<p>Each branch gets its own best question.</p>", "show": ["r", "y", "n"], "metrics": {"stage": ["recursive splits"]}}, {"short": "Leaves", "tag": "Leaves", "title": "Leaves hold the default rate of the training loans that reach them", "body": "<p>Readable: you can explain any decision.</p>", "show": ["r", "y", "n", "a", "bb", "c", "d"], "metrics": {"stage": ["leaves"]}}, {"short": "Predict", "tag": "Predict", "title": "New applicant: no missed payments, high income", "body": "<p>No → No → 2% risk.</p>", "flow": [[["r", "n", "d"], "#22c55e", ""]], "metrics": {"stage": ["predict: 2%"]}}, {"short": "Deep", "tag": "Overfit", "title": "Let it grow 30 levels deep", "body": "<p>It memorises noise: perfect on training data, poor on new loans.</p>", "metrics": {"stage": ["deep tree"], "train": ["99%"], "test": ["71%", "bad"]}}, {"short": "Prune", "tag": "Regularise", "title": "Limit depth / minimum samples per leaf", "body": "<p>Simpler tree, better on new data.</p>", "metrics": {"train": ["86%"], "test": ["82%"]}}, {"short": "Forest", "tag": "Ensemble", "title": "Random forest: hundreds of trees on random samples, then vote", "body": "<p>Individual errors cancel out.</p>", "metrics": {"stage": ["random forest"], "test": ["86%"]}}, {"short": "Boost", "tag": "Ensemble", "title": "Gradient boosting: each new tree fixes the previous trees' errors", "body": "<p>XGBoost / LightGBM, still the strongest choice for most tabular business problems.</p>", "metrics": {"stage": ["gradient boosting"], "test": ["89%", "good"]}}, {"short": "Check", "tag": "Validate", "title": "Cross-validation, a time-based split, and fairness checks", "body": "<p>Don't leak future information; check error rates across groups.</p>", "note": {"kind": "key", "text": "Trees split on the most informative questions; single deep trees overfit; forests and boosting ensemble many trees. Validate on held-out, time-respecting data."}}]}
 
 
 
 ## Not everything needs a neural network
 
-> [!STORY] A bank wants to predict which loan applicants will default. A team spends two months training a deep neural network on the applicant table — income, age, existing loans, repayment history, employment type. It reaches 0.78 AUC. A colleague trains a gradient-boosted tree model in an afternoon: 0.81 AUC, trains in minutes on a laptop, and can explain which factors drove each decision — which regulators require. Study after study, and years of Kaggle competitions, show the same pattern: for **table-shaped data** (rows and columns of business features), tree ensembles are usually the strongest and most practical choice.
+> [!STORY] A bank wants to predict which loan applicants will default. A team spends two months training a deep neural network on the applicant table, income, age, existing loans, repayment history, employment type. It reaches 0.78 AUC. A colleague trains a gradient-boosted tree model in an afternoon: 0.81 AUC, trains in minutes on a laptop, and can explain which factors drove each decision, which regulators require. Study after study, and years of Kaggle competitions, show the same pattern: for **table-shaped data** (rows and columns of business features), tree ensembles are usually the strongest and most practical choice.
 
 Chapter 1 introduced the ideas of training, loss and overfitting. This chapter covers the classical models you'll use most often outside of language and images.
 
@@ -21,7 +21,7 @@ Chapter 1 introduced the ideas of training, loss and overfitting. This chapter c
 - **Regularization** (L2 "ridge", L1 "lasso") keeps weights small; L1 also drives useless features' weights to zero.
 - **Limits:** they assume effects add up in straight lines. "Income matters a lot below ₹30,000 and barely above ₹2,00,000" or "age matters differently for students and retirees" need hand-made features.
 
-They remain excellent **baselines** — always train one first, to know what fancier models must beat.
+They remain excellent **baselines** always train one first, to know what fancier models must beat.
 
 ## Decision trees
 
@@ -29,11 +29,11 @@ A **decision tree** learns a flowchart of yes/no questions:
 
 ::widget Stepper {"type":"tree","title":"A small decision tree for loan default risk","what":"A tree learned from past loans. Each box is a question about the applicant; follow the answers down to a leaf, which gives the predicted default rate of similar past applicants.","steps":["Click the root and follow one path to a leaf.","Notice that each split was chosen because it separates defaulters from non-defaulters best.","Find a path where the same feature (income) matters differently depending on an earlier answer."],"nodes":[["Missed payments in last 12 months > 2?","The most informative first question: it splits the training loans into the purest groups."],["Yes → Debt-to-income > 45%?","Applicants with a poor recent record. Next most useful question for this group."],["No → Monthly income < ₹25,000?","Applicants with a clean recent record."],["Yes, Yes → 38% default (leaf)","High risk: recent missed payments and heavily indebted."],["Yes, No → 14% default (leaf)","Missed payments but manageable debt."],["No, Yes → 6% default; No, No → 2% default (leaves)","Clean record: lower income is somewhat riskier, high income very low risk."]]}
 
-**How splits are chosen:** at each node, try every feature and threshold, and pick the one that makes the two resulting groups most **pure** — measured by Gini impurity or entropy for classification, or variance reduction for regression. Repeat recursively until a stopping rule (maximum depth, minimum samples per leaf).
+**How splits are chosen:** at each node, try every feature and threshold, and pick the one that makes the two resulting groups most **pure** measured by Gini impurity or entropy for classification, or variance reduction for regression. Repeat recursively until a stopping rule (maximum depth, minimum samples per leaf).
 
 > [!ANALOGY] The game of twenty questions. A good player asks the question that splits the remaining possibilities most evenly ("Is it alive?") rather than a very specific one ("Is it a giraffe?"). A decision tree greedily picks the most informative question at each step.
 
-Strengths: handles non-linear effects and interactions automatically, needs no feature scaling, copes with mixed numeric and categorical data, easy to explain. Weakness: a single deep tree **overfits badly** — it memorizes noise, and small data changes produce very different trees.
+Strengths: handles non-linear effects and interactions automatically, needs no feature scaling, copes with mixed numeric and categorical data, easy to explain. Weakness: a single deep tree **overfits badly** it memorizes noise, and small data changes produce very different trees.
 
 ## Ensembles: many trees are better than one
 
@@ -41,13 +41,13 @@ Strengths: handles non-linear effects and interactions automatically, needs no f
 
 Train hundreds of trees, each on a random **bootstrap sample** of rows and considering a random subset of features at each split, then **average** their predictions (or vote). Individual trees overfit in different ways; averaging cancels much of the noise.
 
-> [!ANALOGY] The wisdom of crowds: asking 500 people to guess the number of sweets in a jar and averaging gives a better answer than most individuals — as long as their errors are independent. Randomizing rows and features keeps the trees' errors different.
+> [!ANALOGY] The wisdom of crowds: asking 500 people to guess the number of sweets in a jar and averaging gives a better answer than most individuals, as long as their errors are independent. Randomizing rows and features keeps the trees' errors different.
 
 Random forests are robust, hard to badly misconfigure, and give a quick **feature importance** estimate.
 
 ### Gradient boosting
 
-Boosting builds trees **one after another**, each new small tree trained to correct the **errors** (the gradient of the loss — chapter 1) of the ensemble so far. Add each tree's predictions with a small learning rate, and repeat hundreds or thousands of times.
+Boosting builds trees **one after another** each new small tree trained to correct the **errors** (the gradient of the loss, chapter 1) of the ensemble so far. Add each tree's predictions with a small learning rate, and repeat hundreds or thousands of times.
 
 ```python
 import lightgbm as lgb
@@ -60,12 +60,12 @@ model = lgb.LGBMClassifier(
 model.fit(X_train, y_train,
           eval_set=[(X_valid, y_valid)],
           callbacks=[lgb.early_stopping(100)])       # stop when validation stops improving
-print(roc_auc_score(y_valid, model.predict_proba(X_valid)[:, 1]))
+print(roc_auc_score(y_valid, model.predict_proba(X_valid)[: 1]))
 ```
 
-**XGBoost**, **LightGBM** and **CatBoost** are the standard libraries — fast, handling missing values natively, and (CatBoost especially) categorical features. They dominate tabular problems: credit scoring, fraud detection, click-through prediction, demand forecasting, churn, insurance pricing, ranking in search (System Design track, chapter 12).
+**XGBoost** **LightGBM** and **CatBoost** are the standard libraries, fast, handling missing values natively, and (CatBoost especially) categorical features. They dominate tabular problems: credit scoring, fraud detection, click-through prediction, demand forecasting, churn, insurance pricing, ranking in search (System Design track, chapter 12).
 
-Key knobs: number of trees with **early stopping**, learning rate, tree size (depth/leaves), row and column subsampling, regularization.
+Key knobs: number of trees with **early stopping** learning rate, tree size (depth/leaves), row and column subsampling, regularization.
 
 ### Explaining predictions
 
@@ -82,15 +82,15 @@ With no labels, **clustering** groups similar items.
 3. Move each center to the average of its assigned points.
 4. Repeat until assignments stop changing.
 
-Used for customer segmentation ("budget families", "frequent business travellers"), grouping documents, compressing colors in images, and as a building block in vector-search indexes (IVF — chapter 5). Choose k with the "elbow" of the error curve, silhouette scores, or business sense. Weaknesses: assumes roughly round, similar-sized clusters; sensitive to scaling and outliers.
+Used for customer segmentation ("budget families", "frequent business travellers"), grouping documents, compressing colors in images, and as a building block in vector-search indexes (IVF, chapter 5). Choose k with the "elbow" of the error curve, silhouette scores, or business sense. Weaknesses: assumes roughly round, similar-sized clusters; sensitive to scaling and outliers.
 
 ### Other methods
 
-- **DBSCAN / HDBSCAN:** find dense regions of any shape and label sparse points as noise — good for geographic hotspots and anomaly detection.
+- **DBSCAN / HDBSCAN:** find dense regions of any shape and label sparse points as noise, good for geographic hotspots and anomaly detection.
 - **Hierarchical clustering:** a tree of merges, letting you choose the level of detail.
 - **Gaussian mixture models:** soft assignments with probabilities.
 
-**Dimensionality reduction** helps visualize and compress: **PCA** finds the directions of greatest variation; **t-SNE** and **UMAP** make 2D maps of high-dimensional data (like embedding plots — chapter 5).
+**Dimensionality reduction** helps visualize and compress: **PCA** finds the directions of greatest variation; **t-SNE** and **UMAP** make 2D maps of high-dimensional data (like embedding plots, chapter 5).
 
 **Anomaly detection** (fraud, intrusion, faulty sensors): isolation forests, distance to cluster centers, or simple statistical thresholds.
 
@@ -104,7 +104,7 @@ For classical models, **good features** matter more than model choice:
 - **Categorical encodings:** one-hot for few categories; target encoding (carefully, to avoid leakage) for many.
 - **Text and images** turned into embeddings (chapter 5) and fed as features.
 
-> [!WARN] Features must be computable **at prediction time** with only information available then. "Number of chargebacks on this card" computed using data from after the transaction is **leakage** (chapter 1) — great validation scores, useless in production. Feature stores (chapter 15) help keep training and serving consistent.
+> [!WARN] Features must be computable **at prediction time** with only information available then. "Number of chargebacks on this card" computed using data from after the transaction is **leakage** (chapter 1), great validation scores, useless in production. Feature stores (chapter 15) help keep training and serving consistent.
 
 ## When to use what
 
@@ -119,7 +119,7 @@ For classical models, **good features** matter more than model choice:
 > [!RECAP]
 > - **Linear/logistic regression**: fast, interpretable baselines; regularize.
 > - **Decision trees** split greedily on the most informative question; one tree overfits.
-> - **Random forests** average many randomized trees; **gradient boosting** adds trees that fix previous errors — the top choice for tabular data.
+> - **Random forests** average many randomized trees; **gradient boosting** adds trees that fix previous errors, the top choice for tabular data.
 > - Explain predictions with **SHAP**.
 > - **Clustering** (k-means, DBSCAN) and **dimensionality reduction** (PCA, UMAP) find structure without labels.
 > - **Feature engineering** drives results; never use information unavailable at prediction time.

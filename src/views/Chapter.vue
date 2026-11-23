@@ -1,13 +1,14 @@
 <script setup>
 import { computed, ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getTrack, getChapter } from '../lib/content.js'
+import { getTrack, getChapter, fmtTime } from '../lib/content.js'
 import { renderChapter } from '../lib/markdown.js'
 import { state } from '../lib/progress.js'
 import WidgetFrame from '../components/WidgetFrame.vue'
 import Scene from '../components/widgets/Scene.vue'
 import Quiz from '../components/Quiz.vue'
 import Icon from '../components/Icon.vue'
+import CheatSheet from '../components/CheatSheet.vue'
 
 const route = useRoute(), router = useRouter()
 const track = computed(() => getTrack(route.params.track))
@@ -20,7 +21,7 @@ const key = computed(() => `${route.params.track}/${route.params.chapter}`)
 const base = computed(() => `/read/${route.params.track}/${route.params.chapter}`)
 
 // ---- stages: basics (cards) → lesson (interactive) → quiz ----
-const stage = computed(() => route.params.lesson ? 'lesson' : route.query.view === 'quiz' ? 'quiz' : route.query.view === 'article' ? 'article' : 'basics')
+const stage = computed(() => route.params.lesson ? 'lesson' : route.query.view === 'quiz' ? 'quiz' : route.query.view === 'cheat' ? 'cheat' : route.query.view === 'article' ? 'article' : 'basics')
 
 // lessons = every Scene embed
 const scenes = computed(() => (doc.value?.segs || []).filter(s => s.type === 'widget' && s.name === 'Scene'))
@@ -56,11 +57,17 @@ const memKey = computed(() => 'card:' + key.value)
 const card = ref(0), dir = ref('fwd'), cardEl = ref(null)
 const total = computed(() => sections.value.length)
 const cur = computed(() => sections.value[card.value])
+const cardKey = c => `${key.value}@${c.id}`
+const isRead = c => !!state.done[cardKey(c)]
+const toggleRead = c => { if (isRead(c)) { delete state.done[cardKey(c)]; delete state.done[key.value + '#basics']; delete state.done[key.value] } else state.done[cardKey(c)] = true }
+const readCount = computed(() => sections.value.filter(isRead).length)
+const resetChapter = () => { for (const k of Object.keys(state.done)) if (k === key.value || k.startsWith(key.value + '#') || k.startsWith(key.value + '@')) delete state.done[k] }
+const finishCards = () => { state.done[cardKey(cur.value)] = true; state.done[key.value + '#basics'] = true }
 const goCard = (n, sub) => {
   if (n < 0 || n >= total.value) return
+  if (n > card.value && cur.value) state.done[cardKey(cur.value)] = true   // moving past a card marks it read
   dir.value = n >= card.value ? 'fwd' : 'back'; card.value = n
   try { sessionStorage.setItem(memKey.value, n) } catch {}
-  if (n === total.value - 1) state.done[key.value + '#basics'] = true
   nextTick(() => {
     const el = sub && document.getElementById(sub)
     const top = (el || cardEl.value)?.getBoundingClientRect().top + scrollY - 96
@@ -71,14 +78,15 @@ const afterCards = computed(() => scenes.value.length ? lessonLink(1) : `${base.
 
 const onKey = e => {
   if (stage.value !== 'basics' || /INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName)) return
-  if (e.key === 'ArrowRight') { e.preventDefault(); card.value < total.value - 1 ? goCard(card.value + 1) : router.push(afterCards.value) }
+  if (e.key === 'ArrowRight') { e.preventDefault(); if (card.value < total.value - 1) goCard(card.value + 1); else { finishCards(); router.push(afterCards.value) } }
   else if (e.key === 'ArrowLeft') { e.preventDefault(); goCard(card.value - 1) }
 }
 
 const stages = computed(() => [
-  { id: 'basics', n: 1, label: 'Basics', sub: `${total.value} short cards`, to: base.value, done: state.done[key.value + '#basics'] },
+  { id: 'basics', n: 1, label: 'Basics', sub: `${readCount.value} of ${total.value} cards read`, to: base.value, done: state.done[key.value + '#basics'] },
   ...(scenes.value.length ? [{ id: 'lesson', n: 2, label: 'Interactive lesson', sub: `${scenes.value.length > 1 ? scenes.value.length + ' lessons' : (scenes.value[0].props.steps?.length || 0) + ' steps'}`, to: lessonLink(1), done: state.done[key.value + '#lessons'] }] : []),
   { id: 'quiz', n: scenes.value.length ? 3 : 2, label: 'Check yourself', sub: quizzes.value.length ? `${quizzes.value.length} questions` : 'wrap up', to: `${base.value}?view=quiz`, done: state.done[key.value] },
+  { id: 'cheat', n: scenes.value.length ? 4 : 3, label: 'Cheat sheet', sub: 'one-page revision', to: `${base.value}?view=cheat`, done: false },
 ])
 
 onMounted(() => {
@@ -100,8 +108,9 @@ watch(stage, () => scrollTo({ top: 0 }))
       <div class="chap-crumb">
         <router-link :to="`/track/${track.id}`" :style="{ color: track.color }"><Icon :name="track.icon" :size="13" /> {{ track.name }}</router-link>
         <Icon name="right" :size="12" /><span>Chapter {{ idx + 1 }} of {{ track.chapters.length }}</span>
-        <span class="chap-meta-dot"></span><span>{{ ch.minutes }} min</span>
+        <span class="chap-meta-dot"></span><span :title="`Reading ${fmtTime(ch.readMin)} · lessons ${fmtTime(ch.lessonMin)} · quiz ${fmtTime(ch.quizMin)}`">{{ fmtTime(ch.minutes) }}</span>
         <template v-if="state.done[key]"><span class="chap-meta-dot"></span><span class="chap-ok"><Icon name="check" :size="12" :stroke="3" /> Completed</span></template>
+        <button v-if="readCount || state.done[key]" class="chap-reset" @click="resetChapter" title="Clear all progress for this chapter"><Icon name="refresh" :size="12" /> Mark chapter unread</button>
       </div>
       <h1>{{ ch.title }}</h1>
       <nav class="stages" aria-label="Chapter stages">
@@ -116,8 +125,8 @@ watch(stage, () => scrollTo({ top: 0 }))
     <section v-if="stage === 'basics' && cur" class="cards">
       <aside class="topics" aria-label="Topics in this chapter">
         <div class="topics-h">In this chapter</div>
-        <button v-for="(c, i) in sections" :key="c.id" class="topic" :class="{ on: i === card, seen: i < card }" @click="goCard(i)">
-          <span class="topic-n">{{ String(i + 1).padStart(2, '0') }}</span><span>{{ c.title }}</span>
+        <button v-for="(c, i) in sections" :key="c.id" class="topic" :class="{ on: i === card, seen: isRead(c) }" @click="goCard(i)">
+          <span class="topic-n"><Icon v-if="isRead(c)" name="check" :size="12" :stroke="3" /><template v-else>{{ String(i + 1).padStart(2, '0') }}</template></span><span>{{ c.title }}</span>
         </button>
         <div v-if="subOf(cur).length" class="topics-sub">
           <div class="topics-h">On this card</div>
@@ -132,6 +141,7 @@ watch(stage, () => scrollTo({ top: 0 }))
           <div ref="cardEl" class="card-top">
             <span class="card-count">Card {{ card + 1 }} <i>/ {{ total }}</i></span>
             <div class="card-bar"><div :style="{ width: (100 * (card + 1) / total) + '%' }"></div></div>
+            <button class="card-read" :class="{ on: isRead(cur) }" @click="toggleRead(cur)"><Icon :name="isRead(cur) ? 'check' : 'bookmark'" :size="13" /> {{ isRead(cur) ? 'Read · mark unread' : 'Mark as read' }}</button>
           </div>
           <Transition :name="'card-' + dir" mode="out-in">
             <article :key="card" class="kcard">
@@ -147,12 +157,12 @@ watch(stage, () => scrollTo({ top: 0 }))
             <button v-if="card > 0" class="cp prev" @click="goCard(card - 1)"><small><Icon name="left" :size="12" /> Previous</small><b>{{ sections[card - 1].title }}</b></button>
             <span v-else></span>
             <button v-if="card < total - 1" class="cp next" @click="goCard(card + 1)"><small>Next <Icon name="right" :size="12" /></small><b>{{ sections[card + 1].title }}</b></button>
-            <router-link v-else :to="afterCards" class="cp next go"><small>Basics done <Icon name="right" :size="12" /></small><b>{{ scenes.length ? 'Start the interactive lesson' : 'Check yourself' }}</b></router-link>
+            <router-link v-else :to="afterCards" class="cp next go" @click="finishCards"><small>Basics done <Icon name="right" :size="12" /></small><b>{{ scenes.length ? 'Start the interactive lesson' : 'Check yourself' }}</b></router-link>
           </nav>
           <div class="card-keys"><kbd>←</kbd><kbd>→</kbd> move between cards</div>
         </div>
         <button v-if="card < total - 1" class="card-arrow next" @click="goCard(card + 1)" aria-label="Next card"><Icon name="right" :size="22" /></button>
-        <router-link v-else :to="afterCards" class="card-arrow next go" aria-label="Continue"><Icon name="right" :size="22" /></router-link>
+        <router-link v-else :to="afterCards" class="card-arrow next go" aria-label="Continue" @click="finishCards"><Icon name="right" :size="22" /></router-link>
       </div>
     </section>
 
@@ -184,6 +194,16 @@ watch(stage, () => scrollTo({ top: 0 }))
           <router-link v-if="prev" :to="`/read/${track.id}/${prev.slug}`"><small><Icon name="left" :size="12" /> Previous chapter</small><b>{{ prev.title }}</b></router-link>
           <router-link v-if="next" :to="`/read/${track.id}/${next.slug}`" class="next"><small>Next chapter <Icon name="right" :size="12" /></small><b>{{ next.title }}</b></router-link>
         </nav>
+      </div>
+    </section>
+
+    <!-- 4. CHEAT SHEET -->
+    <section v-else-if="stage === 'cheat'" class="wrap">
+      <div class="wrap-col cs-col">
+        <div class="cs-head"><h2 class="wrap-h">Cheat sheet</h2>
+          <div class="dz-row"><button class="btn sm" onclick="window.print()"><Icon name="file" :size="13" /> Print / save PDF</button>
+          <router-link to="/cheatsheets" class="btn sm ghost"><Icon name="library" :size="13" /> All cheat sheets</router-link></div></div>
+        <CheatSheet :chapter="ch" />
       </div>
     </section>
 

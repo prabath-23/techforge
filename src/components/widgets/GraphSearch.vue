@@ -3,7 +3,7 @@
 import { ref, onUnmounted } from 'vue'
 const R = 14, C = 28, S = [7, 3], T = [7, 24]
 const cells = ref(Array(R * C).fill(0)) // 0 empty, 1 wall, 5 mud (cost 5)
-const vis = ref({}), path = ref(new Set()), info = ref('Drag to draw. Mud costs 5 to cross — only Dijkstra/A* account for it.'), brush = ref(1), algo = ref('bfs')
+const vis = ref({}), path = ref(new Set()), info = ref('Drag to draw. Mud costs 5 to cross, only Dijkstra/A* account for it.'), brush = ref(1), algo = ref('bfs')
 let down = false, timer
 const k = (r, c) => r * C + c
 const paint = i => { if (i === k(...S) || i === k(...T)) return; cells.value[i] = cells.value[i] === brush.value ? 0 : brush.value }

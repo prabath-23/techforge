@@ -26,16 +26,16 @@ const REGIONS = [['Kernel space', 'Mapped in every process but only accessible i
         <div style="color:#ec4899;font-weight:800">STACK ↓ grows down</div>
         <div v-for="(f, i) in frames" :key="i" :style="{ background: 'color-mix(in srgb,#ec4899 ' + (20 + i * 8) + '%,transparent)', margin: '2px 0', padding: '3px 8px', borderRadius: '4px' }">frame: {{ f.fn }}() · ret addr · saved rbp · {{ f.bytes }}B locals</div>
       </div>
-      <div style="color:var(--muted)">0x7f…</div><div style="border:2px dashed #8b5cf6;border-radius:6px;padding:6px 10px"><b style="color:#8b5cf6">mmap region</b> — shared libs (libc.so), mmap’d files, big mallocs <span v-for="(m, i) in mmaps" :key="i" class="chip">anon {{ m }}K</span></div>
-      <div></div><div style="text-align:center;color:var(--muted);padding:6px">⋮ unmapped gap — touching it = segfault ⋮</div>
+      <div style="color:var(--muted)">0x7f…</div><div style="border:2px dashed #8b5cf6;border-radius:6px;padding:6px 10px"><b style="color:#8b5cf6">mmap region</b>, shared libs (libc.so), mmap’d files, big mallocs <span v-for="(m, i) in mmaps" :key="i" class="chip">anon {{ m }}K</span></div>
+      <div></div><div style="text-align:center;color:var(--muted);padding:6px">⋮ unmapped gap, touching it = segfault ⋮</div>
       <div style="color:var(--muted)">program break</div>
       <div style="border:2px solid #16a34a;border-radius:6px;padding:4px">
         <div style="display:flex;flex-wrap:wrap;gap:3px"><span v-for="(h, i) in heap" :key="i" :style="{ background: '#16a34a', color: '#fff', padding: '2px 6px', borderRadius: '4px', width: Math.min(200, 30 + h / 6) + 'px' }">{{ h }}B</span></div>
         <div style="color:#16a34a;font-weight:800">HEAP ↑ grows up (brk)</div>
       </div>
-      <div style="color:var(--muted)"></div><div style="background:var(--soft);padding:6px 10px;border-radius:6px"><b>.bss</b> — zero-initialized globals (no space in the file)</div>
-      <div style="color:var(--muted)"></div><div style="background:var(--soft);padding:6px 10px;border-radius:6px"><b>.data</b> — initialized globals</div>
-      <div style="color:var(--muted)">0x0040_0000</div><div style="background:var(--node);padding:6px 10px;border-radius:6px"><b>.text</b> — machine code (read + execute, not writable)</div>
+      <div style="color:var(--muted)"></div><div style="background:var(--soft);padding:6px 10px;border-radius:6px"><b>.bss</b>, zero-initialized globals (no space in the file)</div>
+      <div style="color:var(--muted)"></div><div style="background:var(--soft);padding:6px 10px;border-radius:6px"><b>.data</b>, initialized globals</div>
+      <div style="color:var(--muted)">0x0040_0000</div><div style="background:var(--node);padding:6px 10px;border-radius:6px"><b>.text</b>, machine code (read + execute, not writable)</div>
       <div style="color:var(--muted)">0x0</div><div style="color:var(--bad);padding:4px 10px">NULL page unmapped → dereferencing NULL faults</div>
     </div>
     <div class="w-out">{{ msg }}</div>

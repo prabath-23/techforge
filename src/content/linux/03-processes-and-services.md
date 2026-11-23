@@ -1,14 +1,14 @@
 ---
-title: Processes, Jobs and Services — ps, signals and systemd
-summary: Seeing what's running with ps and top, what process states and load average really mean, sending signals (and why kill -9 should be your last resort), background jobs, and running your app as a proper service with systemd — automatic restarts, logs with journalctl, and resource limits.
+title: Processes, Jobs and Services: ps, signals and systemd
+summary: Seeing what's running with ps and top, what process states and load average really mean, sending signals (and why kill -9 should be your last resort), background jobs, and running your app as a proper service with systemd, automatic restarts, logs with journalctl, and resource limits.
 ---
 
-::widget Scene {"title": "SIGTERM vs SIGKILL", "sub": "stopping a web server gracefully with systemd", "nodes": [{"id": "sd", "kind": "cube", "label": "systemd", "x": 3.72, "y": 3.72, "color": "purple"}, {"id": "app", "kind": "server", "label": "web app (pid 2210)", "x": 8.22, "y": -0.78, "color": "blue"}, {"id": "req", "kind": "user", "label": "In-flight requests", "x": 9.0, "y": -9.0}, {"id": "db", "kind": "db", "label": "DB connections", "x": 16.44, "y": -1.56, "color": "teal"}], "links": [["sd", "app"], ["app", "req"], ["app", "db"]], "metrics": [["sig", "Signal"], ["app", "App does"], ["res", "Result"]], "steps": [{"short": "Stop", "tag": "Request", "title": "systemctl stop web (or a deploy)", "body": "<p>systemd starts the shutdown sequence.</p>", "show": ["sd", "app", "req", "db"], "metrics": {"sig": ["—"], "app": ["serving"], "res": ["—"]}}, {"short": "Term", "tag": "SIGTERM", "title": "systemd sends SIGTERM: \"please stop\"", "body": "<p>A signal the app can catch and handle.</p>", "flow": [["sd", "app", "#f59e0b", "SIGTERM"]], "metrics": {"sig": ["SIGTERM (15)"]}}, {"short": "Drain", "tag": "Graceful", "title": "The app stops accepting new requests", "body": "<p>Readiness fails so the load balancer stops sending traffic.</p>", "set": {"app": {"badge": "draining"}}, "metrics": {"app": ["stop accepting"]}}, {"short": "Finish", "tag": "Graceful", "title": "Finish in-flight requests", "body": "<p>A checkout halfway through completes instead of failing.</p>", "flow": [["app", "req", "#22c55e", "responses sent"]], "metrics": {"app": ["finish work"]}}, {"short": "Close", "tag": "Graceful", "title": "Flush logs, close DB connections, exit(0)", "body": "<p>Clean shutdown in ~3 s.</p>", "flow": [["app", "db", "#14b8a6", "close"]], "set": {"app": {"badge": "exited 0", "dim": true}}, "metrics": {"res": ["clean", "good"]}}, {"short": "Hang", "tag": "Timeout", "title": "If it ignores SIGTERM or hangs…", "body": "<p>systemd waits TimeoutStopSec (default 90 s).</p>", "set": {"app": {"badge": "stuck", "dim": false}}, "metrics": {"app": ["not exiting"], "res": ["waiting…"]}}, {"short": "Kill", "tag": "SIGKILL", "title": "…then SIGKILL: the kernel ends it immediately", "body": "<p>Can't be caught. No cleanup: open requests fail, buffered data is lost.</p>", "flow": [["sd", "app", "#ef4444", "SIGKILL"]], "set": {"app": {"badge": "killed", "dim": true}}, "metrics": {"sig": ["SIGKILL (9)"], "res": ["abrupt", "bad"]}}, {"short": "Habit", "tag": "Habit", "title": "Never reach for kill -9 first", "body": "<p>Send TERM, wait, then KILL only if needed. Others: SIGHUP (reload config), SIGINT (Ctrl-C).</p>"}, {"short": "Restart", "tag": "systemd", "title": "Restart=on-failure and journald logs", "body": "<p>systemd restarts crashes with back-off; journalctl -u web shows why it died.</p>", "note": {"kind": "key", "text": "SIGTERM asks a process to shut down cleanly (drain, finish, close); SIGKILL forces it. Handle SIGTERM in every service."}}]}
+::widget Scene {"title": "SIGTERM vs SIGKILL", "sub": "stopping a web server gracefully with systemd", "nodes": [{"id": "sd", "kind": "cube", "label": "systemd", "x": 3.72, "y": 3.72, "color": "purple"}, {"id": "app", "kind": "server", "label": "web app (pid 2210)", "x": 8.22, "y": -0.78, "color": "blue"}, {"id": "req", "kind": "user", "label": "In-flight requests", "x": 9.0, "y": -9.0}, {"id": "db", "kind": "db", "label": "DB connections", "x": 16.44, "y": -1.56, "color": "teal"}], "links": [["sd", "app"], ["app", "req"], ["app", "db"]], "metrics": [["sig", "Signal"], ["app", "App does"], ["res", "Result"]], "steps": [{"short": "Stop", "tag": "Request", "title": "systemctl stop web (or a deploy)", "body": "<p>systemd starts the shutdown sequence.</p>", "show": ["sd", "app", "req", "db"], "metrics": {"sig": ["-"], "app": ["serving"], "res": ["-"]}}, {"short": "Term", "tag": "SIGTERM", "title": "systemd sends SIGTERM: \"please stop\"", "body": "<p>A signal the app can catch and handle.</p>", "flow": [["sd", "app", "#f59e0b", "SIGTERM"]], "metrics": {"sig": ["SIGTERM (15)"]}}, {"short": "Drain", "tag": "Graceful", "title": "The app stops accepting new requests", "body": "<p>Readiness fails so the load balancer stops sending traffic.</p>", "set": {"app": {"badge": "draining"}}, "metrics": {"app": ["stop accepting"]}}, {"short": "Finish", "tag": "Graceful", "title": "Finish in-flight requests", "body": "<p>A checkout halfway through completes instead of failing.</p>", "flow": [["app", "req", "#22c55e", "responses sent"]], "metrics": {"app": ["finish work"]}}, {"short": "Close", "tag": "Graceful", "title": "Flush logs, close DB connections, exit(0)", "body": "<p>Clean shutdown in ~3 s.</p>", "flow": [["app", "db", "#14b8a6", "close"]], "set": {"app": {"badge": "exited 0", "dim": true}}, "metrics": {"res": ["clean", "good"]}}, {"short": "Hang", "tag": "Timeout", "title": "If it ignores SIGTERM or hangs…", "body": "<p>systemd waits TimeoutStopSec (default 90 s).</p>", "set": {"app": {"badge": "stuck", "dim": false}}, "metrics": {"app": ["not exiting"], "res": ["waiting…"]}}, {"short": "Kill", "tag": "SIGKILL", "title": "…then SIGKILL: the kernel ends it immediately", "body": "<p>Can't be caught. No cleanup: open requests fail, buffered data is lost.</p>", "flow": [["sd", "app", "#ef4444", "SIGKILL"]], "set": {"app": {"badge": "killed", "dim": true}}, "metrics": {"sig": ["SIGKILL (9)"], "res": ["abrupt", "bad"]}}, {"short": "Habit", "tag": "Habit", "title": "Never reach for kill -9 first", "body": "<p>Send TERM, wait, then KILL only if needed. Others: SIGHUP (reload config), SIGINT (Ctrl-C).</p>"}, {"short": "Restart", "tag": "systemd", "title": "Restart=on-failure and journald logs", "body": "<p>systemd restarts crashes with back-off; journalctl -u web shows why it died.</p>", "note": {"kind": "key", "text": "SIGTERM asks a process to shut down cleanly (drain, finish, close); SIGKILL forces it. Handle SIGTERM in every service."}}]}
 
 
 ## The app that died when the engineer logged out
 
-> [!STORY] An engineer starts the company's API on a new server with `node server.js &` and goes home. Overnight the SSH session times out — and the API dies with it. The next day they use `nohup`; it survives the logout, but when it crashes at 3 am nothing restarts it, and its logs vanish into a file nobody watches. A five-line **systemd** unit file would have handled all three problems: start on boot, restart on crash, collect logs.
+> [!STORY] An engineer starts the company's API on a new server with `node server.js &` and goes home. Overnight the SSH session times out, and the API dies with it. The next day they use `nohup`; it survives the logout, but when it crashes at 3 am nothing restarts it, and its logs vanish into a file nobody watches. A five-line **systemd** unit file would have handled all three problems: start on boot, restart on crash, collect logs.
 
 ## Seeing processes
 
@@ -32,27 +32,27 @@ MiB Mem :  15890 total,    412 free,   9120 used,   6358 buff/cache
 
 - **Load average** (1, 5 and 15 minutes): the average number of processes running or waiting to run (on Linux, also those stuck waiting for disk). Compare it with the **number of CPUs**: a load of 3 on 4 CPUs is fine; on 1 CPU it's overloaded.
 - **us / sy**: time in your programs vs in the kernel. **wa**: waiting for disk I/O. **st**: time stolen by other virtual machines on the same host.
-- **free** memory being low is normal — Linux uses spare memory as **cache**. Look at **available** memory instead (`free -h`).
+- **free** memory being low is normal, Linux uses spare memory as **cache**. Look at **available** memory instead (`free -h`).
 
 ### Process states (the S column)
 
 | State | Meaning |
 |---|---|
 | **R** | Running or ready to run |
-| **S** | Sleeping — waiting for something (a network request, a timer). Most processes. |
-| **D** | Uninterruptible sleep — usually waiting on disk or network storage. Many D processes means I/O trouble. |
-| **Z** | Zombie — finished, but its parent hasn't collected its exit status yet |
+| **S** | Sleeping, waiting for something (a network request, a timer). Most processes. |
+| **D** | Uninterruptible sleep, usually waiting on disk or network storage. Many D processes means I/O trouble. |
+| **Z** | Zombie, finished, but its parent hasn't collected its exit status yet |
 | **T** | Stopped (e.g. by Ctrl-Z) |
 
 ## Signals: talking to processes
 
 A **signal** is a small notification the kernel delivers to a process.
 
-> [!ANALOGY] Signals are like ways of asking someone to leave a party. **SIGTERM** is a polite "we're closing soon" — they finish their drink, say goodbye and get their coat. **SIGKILL** is a bouncer carrying them out mid-sentence: no goodbye, no coat, and anything they were holding hits the floor.
+> [!ANALOGY] Signals are like ways of asking someone to leave a party. **SIGTERM** is a polite "we're closing soon", they finish their drink, say goodbye and get their coat. **SIGKILL** is a bouncer carrying them out mid-sentence: no goodbye, no coat, and anything they were holding hits the floor.
 
 | Signal | Number | Default effect | Typical use |
 |---|---|---|---|
-| **SIGTERM** | 15 | Terminate (can be handled) | Ask a program to shut down gracefully — `kill PID`'s default |
+| **SIGTERM** | 15 | Terminate (can be handled) | Ask a program to shut down gracefully, `kill PID`'s default |
 | **SIGINT** | 2 | Terminate | What Ctrl-C sends |
 | **SIGKILL** | 9 | Kill immediately (can't be caught) | Last resort when a process won't respond |
 | **SIGHUP** | 1 | Terminate | Many daemons treat it as "reload your config" |
@@ -65,7 +65,7 @@ pkill -f "worker.py" # signal by command line
 kill -9 4821         # last resort
 ```
 
-> [!WARN] Go straight to `kill -9` and the program can't flush buffers, finish writing files, close database connections or remove lock files — which can corrupt data. Send SIGTERM, wait a few seconds, then escalate. Your own programs should **handle SIGTERM** by finishing in-flight requests and exiting (Kubernetes sends SIGTERM before killing a pod).
+> [!WARN] Go straight to `kill -9` and the program can't flush buffers, finish writing files, close database connections or remove lock files, which can corrupt data. Send SIGTERM, wait a few seconds, then escalate. Your own programs should **handle SIGTERM** by finishing in-flight requests and exiting (Kubernetes sends SIGTERM before killing a pod).
 
 ## Jobs in your terminal
 
@@ -110,7 +110,7 @@ journalctl -u api -f                # follow its logs
 journalctl -u api --since "1 hour ago" -p err   # only errors from the last hour
 ```
 
-That one file solves the story: the service runs as its own unprivileged user, starts at boot, restarts on crash, has a memory limit, and its stdout/stderr go to the **journal**, searchable with `journalctl`.
+That one file solves the story: the service runs as its own unprivileged user, starts at boot, restarts on crash, has a memory limit, and its stdout/stderr go to the **journal** searchable with `journalctl`.
 
 > [!NOTE] systemd can do much more: **timers** (a modern replacement for cron), socket activation, sandboxing options like `ProtectSystem=strict` and `NoNewPrivileges=true`, and dependencies between services.
 
@@ -122,8 +122,8 @@ That one file solves the story: the service runs as its own unprivileged user, s
 
 > [!INTERVIEW] Common questions: what load average means, SIGTERM vs SIGKILL, what a zombie process is, how to keep a process running after logout, and how you'd run an app as a reliable service on a VM.
 
-::quiz {"q":"A 4-CPU server has a load average of 3.5. Is it overloaded?","options":["Yes, anything over 1 is overloaded","Not necessarily — compare load with the number of CPUs","Load average measures memory","Only if it's over 100"],"answer":1,"explain":"About 4 runnable processes on 4 CPUs means they're all busy but not queueing much."}
+::quiz {"q":"A 4-CPU server has a load average of 3.5. Is it overloaded?","options":["Yes, anything over 1 is overloaded","Not necessarily, compare load with the number of CPUs","Load average measures memory","Only if it's over 100"],"answer":1,"explain":"About 4 runnable processes on 4 CPUs means they're all busy but not queueing much."}
 
-::quiz {"q":"Why prefer SIGTERM over SIGKILL?","options":["SIGTERM is faster","SIGTERM lets the program clean up — flush data, close connections — before exiting","SIGKILL is deprecated","They're identical"],"answer":1,"explain":"SIGKILL can't be caught, so nothing gets cleaned up."}
+::quiz {"q":"Why prefer SIGTERM over SIGKILL?","options":["SIGTERM is faster","SIGTERM lets the program clean up, flush data, close connections, before exiting","SIGKILL is deprecated","They're identical"],"answer":1,"explain":"SIGKILL can't be caught, so nothing gets cleaned up."}
 
 ::quiz {"q":"Which systemd setting restarts a service when it crashes?","options":["WantedBy","Restart=on-failure","After=network.target","ExecStart"],"answer":1,"explain":"Combined with enable, it also starts at boot."}

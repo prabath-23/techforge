@@ -41,6 +41,6 @@ const sel = ref(null)
       <text x="44" y="22" font-size="12" fill="var(--accent)">cwnd</text><text x="100" y="22" font-size="12" fill="var(--warn)">ssthresh</text>
       <text x="740" y="240" font-size="12" fill="var(--muted)" text-anchor="end">RTT →</text>
     </svg>
-    <div class="w-out">{{ sel ? `RTT ${sel.t}: cwnd=${sel.cwnd}, ssthresh=${sel.ss} — ${sel.ev ? sel.ev + '! ' + (sel.ev === 'timeout' ? 'Severe: cwnd collapses to 1, back to slow start.' : algo === 'reno' ? 'Fast recovery: cwnd = ssthresh = cwnd/2 (multiplicative decrease).' : 'Tahoe: cwnd → 1 even on dup ACKs.') : sel.phase}` : 'Hover the curve.' }}</div>
+    <div class="w-out">{{ sel ? `RTT ${sel.t}: cwnd=${sel.cwnd}, ssthresh=${sel.ss}, ${sel.ev ? sel.ev + '! ' + (sel.ev === 'timeout' ? 'Severe: cwnd collapses to 1, back to slow start.' : algo === 'reno' ? 'Fast recovery: cwnd = ssthresh = cwnd/2 (multiplicative decrease).' : 'Tahoe: cwnd → 1 even on dup ACKs.') : sel.phase}` : 'Hover the curve.' }}</div>
   </div>
 </template>

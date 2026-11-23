@@ -1,9 +1,9 @@
 ---
 title: Bit Manipulation and Bitsets
-summary: Using individual bits as a data structure — the bitwise operators and the handful of tricks worth memorizing, flags and permission masks, bitsets for fast set operations on small universes, enumerating all subsets with bitmasks, bitmask dynamic programming, and real-world uses from Redis to chess engines and Bloom filters.
+summary: Using individual bits as a data structure, the bitwise operators and the handful of tricks worth memorizing, flags and permission masks, bitsets for fast set operations on small universes, enumerating all subsets with bitmasks, bitmask dynamic programming, and real-world uses from Redis to chess engines and Bloom filters.
 ---
 
-::widget Scene {"title": "Bits and masks: eight yes/no answers in one byte", "sub": "file permissions as flags: set, test, clear, toggle, count", "nodes": [{"id": "bits", "kind": "cells", "label": "bits 7 … 0", "x": 3.1, "y": 3.1, "values": [0, 0, 0, 0, 0, 0, 0, 0]}], "metrics": [["expr", "Expression"], ["val", "Value"], ["meaning", "Meaning"]], "steps": [{"short": "Flags", "tag": "Idea", "title": "Give each flag one bit: READ = 4 (100), WRITE = 2 (010), EXEC = 1 (001)", "body": "<p>One integer stores many booleans — compact and fast to combine.</p>", "metrics": {"expr": ["perms = 0"], "val": ["00000000"], "meaning": ["nothing allowed"]}}, {"short": "Set", "tag": "Set", "title": "Set READ: perms |= 4", "body": "<p>OR turns a bit on and leaves the others alone.</p>", "set": {"bits": {"marks": {"5": "green"}, "ptr": {}, "values": [0, 0, 0, 0, 0, 1, 0, 0]}}, "metrics": {"expr": ["perms |= READ"], "val": ["00000100"], "meaning": ["read"]}}, {"short": "Set2", "tag": "Set", "title": "Set WRITE too: perms |= 2", "body": "<p>Now 6 = read + write.</p>", "set": {"bits": {"marks": {"6": "green"}, "ptr": {}, "values": [0, 0, 0, 0, 0, 1, 1, 0]}}, "metrics": {"expr": ["perms |= WRITE"], "val": ["00000110 (6)"], "meaning": ["read, write"]}}, {"short": "Test", "tag": "Test", "title": "Can we execute? perms & 1", "body": "<p>AND keeps only the bit we ask about. 0 → no.</p>", "set": {"bits": {"marks": {"7": "orange"}, "ptr": {"?": 7}, "values": [0, 0, 0, 0, 0, 1, 1, 0]}}, "metrics": {"expr": ["perms & EXEC"], "val": ["0"], "meaning": ["cannot execute"]}}, {"short": "Clear", "tag": "Clear", "title": "Remove WRITE: perms &= ~2", "body": "<p>~2 is all ones except bit 1; AND clears just that bit.</p>", "set": {"bits": {"marks": {"6": "red"}, "ptr": {}, "values": [0, 0, 0, 0, 0, 1, 0, 0]}}, "metrics": {"expr": ["perms &= ~WRITE"], "val": ["00000100"], "meaning": ["read only"]}}, {"short": "Toggle", "tag": "Toggle", "title": "Flip EXEC: perms ^= 1", "body": "<p>XOR flips a bit. Do it twice and you're back.</p>", "set": {"bits": {"marks": {"7": "purple"}, "ptr": {}, "values": [0, 0, 0, 0, 0, 1, 0, 1]}}, "metrics": {"expr": ["perms ^= EXEC"], "val": ["00000101 (5)"], "meaning": ["read, execute"]}}, {"short": "Lowest", "tag": "Tricks", "title": "x & (x − 1) clears the lowest set bit", "body": "<p>5 & 4 = 4. Repeat until zero to count set bits — or use popcount, a single CPU instruction.</p>", "set": {"bits": {"marks": {"7": "dark"}, "ptr": {}, "values": [0, 0, 0, 0, 0, 1, 0, 0]}}, "metrics": {"expr": ["5 & 4"], "val": ["00000100"], "meaning": ["popcount(5) = 2"]}}, {"short": "Pow2", "tag": "Tricks", "title": "Power of two? x > 0 and x & (x − 1) == 0", "body": "<p>A power of two has exactly one bit set.</p>"}, {"short": "Subsets", "tag": "Subsets", "title": "Every number 0 … 2ⁿ−1 is a subset of n items", "body": "<p>Bit i set = item i chosen. Looping over masks enumerates all subsets — the basis of bitmask DP.</p>", "note": {"kind": "key", "text": "Set: |=. Test: &. Clear: &= ~. Toggle: ^=. Lowest bit: x & -x; drop it: x & (x−1). Bitsets store huge sets of booleans in a fraction of the memory."}}]}
+::widget Scene {"title": "Bits and masks: eight yes/no answers in one byte", "sub": "file permissions as flags: set, test, clear, toggle, count", "nodes": [{"id": "bits", "kind": "cells", "label": "bits 7 … 0", "x": 3.1, "y": 3.1, "values": [0, 0, 0, 0, 0, 0, 0, 0]}], "metrics": [["expr", "Expression"], ["val", "Value"], ["meaning", "Meaning"]], "steps": [{"short": "Flags", "tag": "Idea", "title": "Give each flag one bit: READ = 4 (100), WRITE = 2 (010), EXEC = 1 (001)", "body": "<p>One integer stores many booleans, compact and fast to combine.</p>", "metrics": {"expr": ["perms = 0"], "val": ["00000000"], "meaning": ["nothing allowed"]}}, {"short": "Set", "tag": "Set", "title": "Set READ: perms |= 4", "body": "<p>OR turns a bit on and leaves the others alone.</p>", "set": {"bits": {"marks": {"5": "green"}, "ptr": {}, "values": [0, 0, 0, 0, 0, 1, 0, 0]}}, "metrics": {"expr": ["perms |= READ"], "val": ["00000100"], "meaning": ["read"]}}, {"short": "Set2", "tag": "Set", "title": "Set WRITE too: perms |= 2", "body": "<p>Now 6 = read + write.</p>", "set": {"bits": {"marks": {"6": "green"}, "ptr": {}, "values": [0, 0, 0, 0, 0, 1, 1, 0]}}, "metrics": {"expr": ["perms |= WRITE"], "val": ["00000110 (6)"], "meaning": ["read, write"]}}, {"short": "Test", "tag": "Test", "title": "Can we execute? perms & 1", "body": "<p>AND keeps only the bit we ask about. 0 → no.</p>", "set": {"bits": {"marks": {"7": "orange"}, "ptr": {"?": 7}, "values": [0, 0, 0, 0, 0, 1, 1, 0]}}, "metrics": {"expr": ["perms & EXEC"], "val": ["0"], "meaning": ["cannot execute"]}}, {"short": "Clear", "tag": "Clear", "title": "Remove WRITE: perms &= ~2", "body": "<p>~2 is all ones except bit 1; AND clears just that bit.</p>", "set": {"bits": {"marks": {"6": "red"}, "ptr": {}, "values": [0, 0, 0, 0, 0, 1, 0, 0]}}, "metrics": {"expr": ["perms &= ~WRITE"], "val": ["00000100"], "meaning": ["read only"]}}, {"short": "Toggle", "tag": "Toggle", "title": "Flip EXEC: perms ^= 1", "body": "<p>XOR flips a bit. Do it twice and you're back.</p>", "set": {"bits": {"marks": {"7": "purple"}, "ptr": {}, "values": [0, 0, 0, 0, 0, 1, 0, 1]}}, "metrics": {"expr": ["perms ^= EXEC"], "val": ["00000101 (5)"], "meaning": ["read, execute"]}}, {"short": "Lowest", "tag": "Tricks", "title": "x & (x − 1) clears the lowest set bit", "body": "<p>5 & 4 = 4. Repeat until zero to count set bits, or use popcount, a single CPU instruction.</p>", "set": {"bits": {"marks": {"7": "dark"}, "ptr": {}, "values": [0, 0, 0, 0, 0, 1, 0, 0]}}, "metrics": {"expr": ["5 & 4"], "val": ["00000100"], "meaning": ["popcount(5) = 2"]}}, {"short": "Pow2", "tag": "Tricks", "title": "Power of two? x > 0 and x & (x − 1) == 0", "body": "<p>A power of two has exactly one bit set.</p>"}, {"short": "Subsets", "tag": "Subsets", "title": "Every number 0 … 2ⁿ−1 is a subset of n items", "body": "<p>Bit i set = item i chosen. Looping over masks enumerates all subsets, the basis of bitmask DP.</p>", "note": {"kind": "key", "text": "Set: |=. Test: &. Clear: &= ~. Toggle: ^=. Lowest bit: x & -x; drop it: x & (x−1). Bitsets store huge sets of booleans in a fraction of the memory."}}]}
 
 
 
@@ -35,7 +35,7 @@ x ^ (1 << i)          # toggle bit i
 x & (x - 1)           # clear the lowest set bit
 x & -x                # isolate the lowest set bit (used by Fenwick trees, next chapter)
 x & (x - 1) == 0      # is x a power of two? (for x > 0)
-bin(x).count("1")     # number of set bits — "popcount" (one CPU instruction in C: __builtin_popcount)
+bin(x).count("1")     # number of set bits, "popcount" (one CPU instruction in C: __builtin_popcount)
 a ^ b ^ b == a        # XOR undoes itself
 ```
 
@@ -43,11 +43,11 @@ a ^ b ^ b == a        # XOR undoes itself
 
 ### Classic interview problems solved with bits
 
-- **Single number:** every element appears twice except one — XOR them all; pairs cancel, the single one remains. O(n) time, O(1) space.
+- **Single number:** every element appears twice except one, XOR them all; pairs cancel, the single one remains. O(n) time, O(1) space.
 - **Missing number** from 0..n: XOR all indices and all values.
 - **Power of two / four:** `x > 0 and x & (x-1) == 0` (and for four, the single bit is at an even position).
 - **Counting bits** for every number up to n: `bits[i] = bits[i >> 1] + (i & 1)`.
-- **Swap without a temp:** `a ^= b; b ^= a; a ^= b` (a curiosity — don't use it in real code).
+- **Swap without a temp:** `a ^= b; b ^= a; a ^= b` (a curiosity, don't use it in real code).
 
 ## Flags and masks
 
@@ -60,7 +60,7 @@ can_write = bool(perms & WRITE)         # True
 perms &= ~WRITE                         # revoke write → 4
 ```
 
-You'll see this pattern in file permissions, TCP header flags (SYN, ACK, FIN — Networking track), feature-flag sets, and OS APIs like `open(path, O_CREAT | O_WRONLY)`.
+You'll see this pattern in file permissions, TCP header flags (SYN, ACK, FIN, Networking track), feature-flag sets, and OS APIs like `open(path, O_CREAT | O_WRONLY)`.
 
 > [!ANALOGY] A row of light switches on a wall panel. Each switch controls one light independently. Reading the whole panel at once tells you the state of every light; flipping one switch doesn't touch the others.
 
@@ -77,17 +77,17 @@ If the possible elements are small integers 0..n−1, a set can be a row of n bi
 | Size | popcount |
 | Membership | test one bit |
 
-Each machine word handles **64 elements per instruction**, and SIMD handles even more (Architecture track, chapter 4). For a universe of a million elements, a bitset takes just 125 KB.
+Each machine word handles **64 elements per instruction** and SIMD handles even more (Architecture track, chapter 4). For a universe of a million elements, a bitset takes just 125 KB.
 
 > [!EXAMPLE] **Real-world bitsets.**
-> - **Redis bitmaps:** `SETBIT active:2026-11-23 <userId> 1` records daily active users — 100 million users fit in ~12 MB, and `BITOP AND` finds users active on both of two days.
+> - **Redis bitmaps:** `SETBIT active:2026-11-23 <userId> 1` records daily active users, 100 million users fit in ~12 MB, and `BITOP AND` finds users active on both of two days.
 > - **Databases** use bitmap indexes for low-cardinality columns and bitmaps to combine index results.
 > - **Roaring bitmaps** compress sparse bitsets and power search engines like Lucene/Elasticsearch, Apache Druid and Pinot.
 > - **Bloom filters** (chapter 9) are a bitset plus hashing.
 
 ## Enumerating subsets with bitmasks
 
-A set of n items has 2ⁿ subsets — and the numbers 0 to 2ⁿ−1, read as bitmasks, list every one of them exactly once.
+A set of n items has 2ⁿ subsets, and the numbers 0 to 2ⁿ−1, read as bitmasks, list every one of them exactly once.
 
 ```python
 items = ["a", "b", "c"]
@@ -102,7 +102,7 @@ Useful for brute-forcing small problems (n ≤ ~20): "choose a subset of tasks t
 
 ## Bitmask dynamic programming
 
-Some problems need to remember **which items have been used so far** — exactly a subset. With n ≤ ~20, the subset fits in a bitmask, which becomes part of the DP state (Algorithms track, chapter 5).
+Some problems need to remember **which items have been used so far** exactly a subset. With n ≤ ~20, the subset fits in a bitmask, which becomes part of the DP state (Algorithms track, chapter 5).
 
 The classic: the **travelling salesman problem**. Visit every city once and return home, minimizing distance. Trying all orders is n! (20! ≈ 2.4 × 10¹⁸). With bitmask DP:
 
@@ -124,7 +124,7 @@ def tsp(dist):
     return best(1, 0)                       # start at city 0, with only city 0 visited
 ```
 
-States: 2ⁿ × n; work per state: n. Total O(2ⁿ · n²) — for n = 20, about 400 million operations instead of 10¹⁸. Still exponential, but feasible.
+States: 2ⁿ × n; work per state: n. Total O(2ⁿ · n²), for n = 20, about 400 million operations instead of 10¹⁸. Still exponential, but feasible.
 
 > [!NOTE] Other bitmask-DP problems: assigning n workers to n jobs, the minimum number of sessions to finish tasks, covering all skills with the smallest team, and "shortest path visiting all nodes" (BFS over (node, mask) states).
 
@@ -132,7 +132,7 @@ States: 2ⁿ × n; work per state: n. Total O(2ⁿ · n²) — for n = 20, about
 
 - **Operator precedence:** in many languages `x & 1 == 0` parses as `x & (1 == 0)`. Always parenthesize: `(x & 1) == 0`.
 - **Signed shifts:** right-shifting a negative number may fill with 1s (arithmetic shift); Java has `>>>` for logical shift. Use unsigned types in C/C++ for bit work.
-- **Shifting by ≥ the width** (e.g. `1 << 64` on a 64-bit int) is undefined in C/C++. Python integers are unbounded, so masks never overflow there — but they're slower.
+- **Shifting by ≥ the width** (e.g. `1 << 64` on a 64-bit int) is undefined in C/C++. Python integers are unbounded, so masks never overflow there, but they're slower.
 - **Readability:** name your masks and wrap tricks in small functions; `is_power_of_two(x)` beats an unexplained `x & (x - 1)`.
 
 > [!RECAP]
@@ -144,7 +144,7 @@ States: 2ⁿ × n; work per state: n. Total O(2ⁿ · n²) — for n = 20, about
 
 > [!INTERVIEW] Bit problems are common warm-ups: single number (XOR), counting bits, power of two, reverse bits, subsets via bitmasks, and bitmask DP for small n. Explain the trick, not just the code.
 
-::quiz {"q":"Every number in an array appears twice except one. What's the O(1)-space solution?","options":["Sort and scan","XOR all numbers — pairs cancel out","Use a hash map","Sum and divide"],"answer":1,"explain":"a ^ a = 0 and a ^ 0 = a."}
+::quiz {"q":"Every number in an array appears twice except one. What's the O(1)-space solution?","options":["Sort and scan","XOR all numbers, pairs cancel out","Use a hash map","Sum and divide"],"answer":1,"explain":"a ^ a = 0 and a ^ 0 = a."}
 
 ::quiz {"q":"What does x & (x - 1) do?","options":["Doubles x","Clears the lowest set bit of x","Sets all bits","Counts bits"],"answer":1,"explain":"It's zero exactly when x is a power of two (for x > 0)."}
 

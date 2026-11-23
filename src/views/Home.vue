@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import { tracks, getChapter } from '../lib/content.js'
+import { tracks, getChapter, fmtTime, trackMinutes } from '../lib/content.js'
 import { state } from '../lib/progress.js'
 import Icon from '../components/Icon.vue'
 import Scene from '../components/widgets/Scene.vue'
@@ -16,6 +16,15 @@ const demo = computed(() => {
   const ch = getChapter('networking', 'http'); const m = ch?.body.match(/^::widget Scene (.+)$/m)
   try { return m ? JSON.parse(m[1]) : null } catch { return null }
 })
+// study time totals
+const totalMin = computed(() => tracks.reduce((n, t) => n + trackMinutes(t), 0))
+const doneMinIn = t => t.chapters.filter(c => state.done[`${t.id}/${c.slug}`]).reduce((n, c) => n + c.minutes, 0)
+const doneMin = computed(() => tracks.reduce((n, t) => n + doneMinIn(t), 0))
+const leftMin = computed(() => totalMin.value - doneMin.value)
+const parts = computed(() => { let r = 0, l = 0, q = 0; for (const t of tracks) for (const c of t.chapters) { r += c.readMin; l += c.lessonMin; q += c.quizMin } return { r, l, q } })
+const pace = [{ h: 1, label: '1 hour a day' }, { h: 2, label: '2 hours a day' }]
+const weeksAt = h => Math.ceil(leftMin.value / 60 / h / 7)
+const maxTrack = computed(() => Math.max(...tracks.map(trackMinutes)))
 const lessonsIn = t => t.chapters.reduce((n, c) => n + (c.lessons?.length || 0), 0)
 const HOW = [
   { n: '01', t: 'Watch it happen', d: 'Every lesson opens on a live illustration: packets moving between machines, arrays being searched, processes being scheduled.' },
@@ -40,6 +49,7 @@ const HOW = [
           <div><b>{{ modules }}</b><span>modules</span></div>
           <div><b>{{ lessonCount }}</b><span>interactive lessons</span></div>
           <div><b>{{ tracks.length }}</b><span>tracks</span></div>
+          <div><b>{{ fmtTime(totalMin) }}</b><span>of study material</span></div>
         </div>
       </div>
       <div class="ax-hero-demo">
@@ -57,13 +67,29 @@ const HOW = [
       </div>
     </section>
 
+    <section class="ax-time">
+      <div class="ax-sec-head"><h2>Study time</h2><p>Every chapter's time is reading + interactive lessons + quiz. Your progress is saved in this browser.</p></div>
+      <div class="ax-time-stats">
+        <div class="ax-stat"><b>{{ fmtTime(totalMin) }}</b><span>total</span><small>{{ fmtTime(parts.r) }} reading · {{ fmtTime(parts.l) }} lessons · {{ fmtTime(parts.q) }} quizzes</small></div>
+        <div class="ax-stat"><b>{{ fmtTime(doneMin) }}</b><span>completed</span><small>{{ Math.round(100 * doneMin / (totalMin || 1)) }}% of everything</small></div>
+        <div class="ax-stat"><b>{{ fmtTime(leftMin) }}</b><span>remaining</span><small><template v-for="(p, i) in pace" :key="p.h">{{ i ? ' · ' : '' }}~{{ weeksAt(p.h) }} weeks at {{ p.label }}</template></small></div>
+      </div>
+      <div class="ax-time-tracks">
+        <router-link v-for="t in tracks" :key="t.id" :to="`/track/${t.id}`" class="ax-time-row" :style="{ '--c': t.color }">
+          <span class="ax-time-name">{{ t.name }}</span>
+          <span class="ax-time-bar"><i :style="{ width: (100 * trackMinutes(t) / maxTrack) + '%' }"><i :style="{ width: (100 * doneMinIn(t) / (trackMinutes(t) || 1)) + '%' }"></i></i></span>
+          <span class="ax-time-val">{{ fmtTime(trackMinutes(t)) }}<small v-if="doneMinIn(t)"> · {{ fmtTime(doneMinIn(t)) }} done</small></span>
+        </router-link>
+      </div>
+    </section>
+
     <section id="tracks" class="ax-tracks">
       <div class="ax-sec-head"><h2>Tracks</h2><p>Start anywhere. Each track builds from first principles to what top engineering teams run in production.</p></div>
       <div class="ax-track-grid">
         <router-link v-for="t in tracks" :key="t.id" :to="`/track/${t.id}`" class="ax-track" :style="{ '--c': t.color }">
           <div class="ax-track-top">
             <span class="ax-tile"><Icon :name="t.icon" :size="20" /></span>
-            <span class="ax-count">{{ t.chapters.length }} modules · {{ lessonsIn(t) }} lessons</span>
+            <span class="ax-count">{{ t.chapters.length }} modules · {{ fmtTime(trackMinutes(t)) }}</span>
           </div>
           <h3>{{ t.name }}</h3>
           <p>{{ t.blurb }}</p>

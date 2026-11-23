@@ -1,16 +1,16 @@
 ---
 title: Computational Geometry Basics
-summary: Algorithms for points, lines and shapes — the cross product and orientation test that answer most questions, checking whether segments intersect, polygon area with the shoelace formula, point-in-polygon tests, convex hulls, closest pairs, distances on the Earth's surface, and spatial indexes (grids, quadtrees, geohashes) that power maps, ride-hailing and games.
+summary: Algorithms for points, lines and shapes, the cross product and orientation test that answer most questions, checking whether segments intersect, polygon area with the shoelace formula, point-in-polygon tests, convex hulls, closest pairs, distances on the Earth's surface, and spatial indexes (grids, quadtrees, geohashes) that power maps, ride-hailing and games.
 ---
 
-::widget Scene {"title": "Point in polygon: is the rider inside the zone?", "sub": "ray casting: count how many edges a ray crosses", "nodes": [{"id": "zone", "kind": "slab", "label": "Delivery zone (polygon)", "x": 6.72, "y": 0.72, "color": "teal"}, {"id": "p", "kind": "user", "label": "Rider P", "x": 6.41, "y": 0.41}, {"id": "q", "kind": "user", "label": "Rider Q", "x": 14.41, "y": -7.59}, {"id": "ray", "kind": "doc", "label": "Ray → (to the right)", "x": 6.07, "y": -7.93, "color": "orange"}], "links": [["p", "ray", {"dashed": true}], ["q", "ray", {"dashed": true}]], "metrics": [["pt", "Point"], ["cross", "Edge crossings"], ["ans", "Inside?"]], "steps": [{"short": "Problem", "tag": "Problem", "title": "Is a GPS point inside an irregular zone?", "body": "<p>Food delivery, geofencing, map clicks. The zone is a list of vertices.</p>", "show": ["zone", "p", "q"], "metrics": {"pt": ["—"], "cross": ["—"], "ans": ["—"]}}, {"short": "Ray", "tag": "Idea", "title": "Shoot a ray from the point in one direction", "body": "<p>Each time it crosses an edge, it switches between inside and outside.</p>", "show": ["zone", "p", "q", "ray"]}, {"short": "P", "tag": "Count", "title": "From P, the ray crosses 1 edge", "body": "<p>Odd → inside.</p>", "flow": [["p", "ray", "#22c55e", "1 crossing"]], "metrics": {"pt": ["P"], "cross": ["1"], "ans": ["inside", "good"]}}, {"short": "Q", "tag": "Count", "title": "From Q (outside), the ray crosses 0 edges", "body": "<p>Even → outside. For a concave zone it could cross 2 — still even, still outside.</p>", "flow": [["q", "ray", "#ef4444", "0 crossings"]], "metrics": {"pt": ["Q"], "cross": ["0"], "ans": ["outside"]}}, {"short": "Edge", "tag": "Test", "title": "Does the ray cross edge (A, B)?", "body": "<p>Only if the point's y lies between A.y and B.y, and the edge's x at that y is to the right of the point.</p>"}, {"short": "Cross", "tag": "Primitive", "title": "Orientation via the cross product", "body": "<p>(B−A)×(P−A) > 0 means P is left of AB, < 0 right, 0 on the line. Almost every geometry algorithm builds on this.</p>"}, {"short": "Vertex", "tag": "Edge cases", "title": "Ray passes exactly through a vertex?", "body": "<p>Count edges using a half-open rule (include the lower endpoint, exclude the upper) so a vertex isn't counted twice.</p>"}, {"short": "Scale", "tag": "Scale", "title": "Millions of points and many zones?", "body": "<p>Bounding-box check first, then a spatial index (grid, R-tree, geohash) to test only nearby zones.</p>", "note": {"kind": "key", "text": "Ray casting: odd crossings = inside. Build on the cross-product orientation test, handle vertices with a half-open rule, and filter with bounding boxes."}}]}
+::widget Scene {"title": "Point in polygon: is the rider inside the zone?", "sub": "ray casting: count how many edges a ray crosses", "nodes": [{"id": "zone", "kind": "slab", "label": "Delivery zone (polygon)", "x": 6.72, "y": 0.72, "color": "teal"}, {"id": "p", "kind": "user", "label": "Rider P", "x": 6.41, "y": 0.41}, {"id": "q", "kind": "user", "label": "Rider Q", "x": 14.41, "y": -7.59}, {"id": "ray", "kind": "doc", "label": "Ray → (to the right)", "x": 6.07, "y": -7.93, "color": "orange"}], "links": [["p", "ray", {"dashed": true}], ["q", "ray", {"dashed": true}]], "metrics": [["pt", "Point"], ["cross", "Edge crossings"], ["ans", "Inside?"]], "steps": [{"short": "Problem", "tag": "Problem", "title": "Is a GPS point inside an irregular zone?", "body": "<p>Food delivery, geofencing, map clicks. The zone is a list of vertices.</p>", "show": ["zone", "p", "q"], "metrics": {"pt": ["-"], "cross": ["-"], "ans": ["-"]}}, {"short": "Ray", "tag": "Idea", "title": "Shoot a ray from the point in one direction", "body": "<p>Each time it crosses an edge, it switches between inside and outside.</p>", "show": ["zone", "p", "q", "ray"]}, {"short": "P", "tag": "Count", "title": "From P, the ray crosses 1 edge", "body": "<p>Odd → inside.</p>", "flow": [["p", "ray", "#22c55e", "1 crossing"]], "metrics": {"pt": ["P"], "cross": ["1"], "ans": ["inside", "good"]}}, {"short": "Q", "tag": "Count", "title": "From Q (outside), the ray crosses 0 edges", "body": "<p>Even → outside. For a concave zone it could cross 2, still even, still outside.</p>", "flow": [["q", "ray", "#ef4444", "0 crossings"]], "metrics": {"pt": ["Q"], "cross": ["0"], "ans": ["outside"]}}, {"short": "Edge", "tag": "Test", "title": "Does the ray cross edge (A, B)?", "body": "<p>Only if the point's y lies between A.y and B.y, and the edge's x at that y is to the right of the point.</p>"}, {"short": "Cross", "tag": "Primitive", "title": "Orientation via the cross product", "body": "<p>(B−A)×(P−A) > 0 means P is left of AB, < 0 right, 0 on the line. Almost every geometry algorithm builds on this.</p>"}, {"short": "Vertex", "tag": "Edge cases", "title": "Ray passes exactly through a vertex?", "body": "<p>Count edges using a half-open rule (include the lower endpoint, exclude the upper) so a vertex isn't counted twice.</p>"}, {"short": "Scale", "tag": "Scale", "title": "Millions of points and many zones?", "body": "<p>Bounding-box check first, then a spatial index (grid, R-tree, geohash) to test only nearby zones.</p>", "note": {"kind": "key", "text": "Ray casting: odd crossings = inside. Build on the cross-product orientation test, handle vertices with a half-open rule, and filter with bounding boxes."}}]}
 
 ::widget Scene {"title": "Point in polygon: is the rider inside the airport zone?", "sub": "count how many edges a ray crosses", "nodes": [{"id": "zone", "kind": "slab", "label": "airport pickup zone", "x": 5.1, "y": 1.1, "size": 5}, {"id": "in", "kind": "user", "label": "rider A", "x": 9.58, "y": 1.58}, {"id": "out", "kind": "user", "label": "rider B", "x": 15.08, "y": -3.92}], "metrics": [["a", "Rider A"], ["b", "Rider B"]], "steps": [{"short": "Ray", "tag": "Idea", "title": "Shoot a ray to the right and count edge crossings", "body": "<p>Every time the ray crosses the boundary, you switch between inside and outside.</p>", "metrics": {"a": ["?"], "b": ["?"]}}, {"short": "Odd", "tag": "Test", "title": "Rider A: 1 crossing (odd) → inside", "body": "<p>Odd number of crossings means the point started inside.</p>", "focus": ["in"], "set": {"in": {"badge": "1 crossing → inside"}}, "metrics": {"a": ["inside", "good"]}}, {"short": "Even", "tag": "Test", "title": "Rider B: 0 crossings (even) → outside", "body": "<p>This is geofencing: delivery zones, surge areas, \"has the truck left its region?\". O(number of edges).</p>", "focus": ["out"], "set": {"out": {"badge": "0 → outside"}}, "metrics": {"b": ["outside", "bad"]}, "note": {"kind": "key", "text": "Most geometry starts from the cross product, which tells you whether a turn is left, right or straight."}}]}
 
 
 ## Which drivers are near me?
 
-> [!STORY] When you open a ride-hailing app, it shows the cars around you within a second or two. Behind that: tens of thousands of drivers in a city sending their location every few seconds, and millions of riders asking "who's within 2 km of this point?". Checking the distance to every driver for every request would be far too slow. The app also needs to know whether your pickup point is inside an airport zone with special rules, and the shortest way around a lake. All of these are **computational geometry** problems — and a surprising number of them start with one tiny calculation: the cross product.
+> [!STORY] When you open a ride-hailing app, it shows the cars around you within a second or two. Behind that: tens of thousands of drivers in a city sending their location every few seconds, and millions of riders asking "who's within 2 km of this point?". Checking the distance to every driver for every request would be far too slow. The app also needs to know whether your pickup point is inside an airport zone with special rules, and the shortest way around a lake. All of these are **computational geometry** problems, and a surprising number of them start with one tiny calculation: the cross product.
 
 ## Points, vectors and the one operation you need
 
@@ -25,7 +25,7 @@ def cross(o, a, b):
     return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
 ```
 
-> [!ANALOGY] Walking from point O to A, then turning towards B. Do you turn left, turn right, or keep going straight? The sign of the cross product tells you — and "which way do I turn?" turns out to answer most geometry questions.
+> [!ANALOGY] Walking from point O to A, then turning towards B. Do you turn left, turn right, or keep going straight? The sign of the cross product tells you, and "which way do I turn?" turns out to answer most geometry questions.
 
 Its absolute value is also **twice the area** of triangle OAB.
 
@@ -35,7 +35,7 @@ The **dot product** `u·v = ux·vx + uy·vy` tells you about angles: positive if
 
 ## Do two segments intersect?
 
-Segments AB and CD cross if A and B are on **opposite sides** of line CD, **and** C and D are on opposite sides of line AB — each checked with the sign of a cross product (plus special handling when points are collinear and overlap).
+Segments AB and CD cross if A and B are on **opposite sides** of line CD, **and** C and D are on opposite sides of line AB, each checked with the sign of a cross product (plus special handling when points are collinear and overlap).
 
 ```python
 def segments_intersect(a, b, c, d):
@@ -92,9 +92,9 @@ This is **geofencing**: is this delivery address inside the service zone? Is thi
 
 ## Convex hull: the rubber band
 
-The **convex hull** of a set of points is the smallest convex polygon containing them all — imagine stretching a rubber band around nails on a board and letting it snap tight.
+The **convex hull** of a set of points is the smallest convex polygon containing them all, imagine stretching a rubber band around nails on a board and letting it snap tight.
 
-::widget Stepper {"type":"flow","cols":3,"title":"Building a convex hull with Andrew's monotone chain","what":"How the convex hull of scattered points is built in O(n log n): sort the points, then build the lower and upper boundaries using left/right turn checks.","steps":["Press Play and follow the construction.","Notice the single test used throughout: does the boundary turn left or right?","Find why each point is added and removed at most once."],"nodes":[["Sort the points","Sort by x (then y). This is the O(n log n) step."],["Build the lower hull","Go left to right, adding each point to a stack. While the last two points on the stack and the new point make a RIGHT turn (cross ≤ 0), pop the middle point — it's inside the hull."],["Build the upper hull","Go right to left with the same rule, building the top boundary."],["Join them","Combine the lower and upper hulls, dropping the duplicate end points. Each point is pushed and popped at most once per pass, so this part is O(n)."],["Result","The vertices of the convex hull in counter-clockwise order — the 'rubber band'."],["Uses","Collision detection (simple outer shapes), the farthest pair of points, outlining a cluster on a map, robot path planning, and image processing."]]}
+::widget Stepper {"type":"flow","cols":3,"title":"Building a convex hull with Andrew's monotone chain","what":"How the convex hull of scattered points is built in O(n log n): sort the points, then build the lower and upper boundaries using left/right turn checks.","steps":["Press Play and follow the construction.","Notice the single test used throughout: does the boundary turn left or right?","Find why each point is added and removed at most once."],"nodes":[["Sort the points","Sort by x (then y). This is the O(n log n) step."],["Build the lower hull","Go left to right, adding each point to a stack. While the last two points on the stack and the new point make a RIGHT turn (cross ≤ 0), pop the middle point, it's inside the hull."],["Build the upper hull","Go right to left with the same rule, building the top boundary."],["Join them","Combine the lower and upper hulls, dropping the duplicate end points. Each point is pushed and popped at most once per pass, so this part is O(n)."],["Result","The vertices of the convex hull in counter-clockwise order, the 'rubber band'."],["Uses","Collision detection (simple outer shapes), the farthest pair of points, outlining a cluster on a map, robot path planning, and image processing."]]}
 
 ```python
 def convex_hull(points):
@@ -112,11 +112,11 @@ def convex_hull(points):
 
 ## Closest pair of points
 
-Checking every pair is O(n²). A **divide-and-conquer** algorithm does it in O(n log n): split the points by x, solve each half, then check only points within the current best distance of the dividing line — and each such point needs comparing with only a handful of neighbors. In practice, a **grid** (below) often does it as well.
+Checking every pair is O(n²). A **divide-and-conquer** algorithm does it in O(n log n): split the points by x, solve each half, then check only points within the current best distance of the dividing line, and each such point needs comparing with only a handful of neighbors. In practice, a **grid** (below) often does it as well.
 
 ## Distances on a real map
 
-On a flat grid, distance is √(Δx² + Δy²) (Euclidean) or |Δx| + |Δy| (**Manhattan** — city blocks). But latitude and longitude are on a **sphere**: one degree of longitude is ~111 km at the equator and ~0 km at the poles. Use the **haversine** formula for great-circle distance:
+On a flat grid, distance is √(Δx² + Δy²) (Euclidean) or |Δx| + |Δy| (**Manhattan** city blocks). But latitude and longitude are on a **sphere**: one degree of longitude is ~111 km at the equator and ~0 km at the poles. Use the **haversine** formula for great-circle distance:
 
 ```python
 from math import radians, sin, cos, asin, sqrt
@@ -129,17 +129,17 @@ def haversine_km(lat1, lon1, lat2, lon2):
 haversine_km(18.52, 73.86, 19.08, 72.88)   # Pune → Mumbai ≈ 120 km in a straight line
 ```
 
-Road distance needs a graph shortest-path algorithm on the road network (chapter 4 — Dijkstra, A*).
+Road distance needs a graph shortest-path algorithm on the road network (chapter 4, Dijkstra, A*).
 
 ## Spatial indexes: answering "what's near here?"
 
 The ride-hailing question needs an index that groups nearby things together.
 
 - **Uniform grid:** divide the map into cells (say 500 m squares); each driver is listed in its cell. A nearby search checks the rider's cell and its neighbors. Simple and fast when density is even.
-- **Quadtree:** recursively split a square into four whenever it holds too many points — fine cells downtown, coarse cells in the countryside.
-- **Geohash:** interleave the bits of latitude and longitude into a string like `tdr1y` — nearby places usually share a prefix, so ordinary sorted indexes and prefix searches find neighbors (Redis `GEOSEARCH` uses a geohash-like encoding).
-- **S2 (Google) and H3 (Uber):** divide the sphere into hierarchical cells — S2 uses squares projected from a cube, H3 uses **hexagons**, whose neighbors are all equally far away (handy for surge-pricing zones and demand heatmaps).
-- **R-trees:** group nearby shapes (rectangles, polygons) into nested bounding boxes — used by PostGIS, SQLite's spatial extension and most GIS databases.
+- **Quadtree:** recursively split a square into four whenever it holds too many points, fine cells downtown, coarse cells in the countryside.
+- **Geohash:** interleave the bits of latitude and longitude into a string like `tdr1y`, nearby places usually share a prefix, so ordinary sorted indexes and prefix searches find neighbors (Redis `GEOSEARCH` uses a geohash-like encoding).
+- **S2 (Google) and H3 (Uber):** divide the sphere into hierarchical cells, S2 uses squares projected from a cube, H3 uses **hexagons** whose neighbors are all equally far away (handy for surge-pricing zones and demand heatmaps).
+- **R-trees:** group nearby shapes (rectangles, polygons) into nested bounding boxes, used by PostGIS, SQLite's spatial extension and most GIS databases.
 
 > [!EXAMPLE] **"Drivers within 2 km", end to end.** Drivers' locations update a map from H3 cell → set of drivers. For a rider, compute their cell, gather the cell and its rings of neighbors covering 2 km, and filter candidates by exact haversine distance. Then rank by **estimated travel time** on the road network, not straight-line distance. The System Design track's ride-hailing case study builds on this.
 
@@ -149,12 +149,12 @@ The ride-hailing question needs an index that groups nearby things together.
 > - **Shoelace formula** for polygon area; **ray casting** for point-in-polygon (geofencing).
 > - **Convex hull** in O(n log n) with the monotone chain; closest pair in O(n log n).
 > - Use **haversine** for distances on Earth; road distance needs graph search.
-> - **Spatial indexes** — grids, quadtrees, geohashes, S2/H3, R-trees — make "what's near here?" fast.
+> - **Spatial indexes** grids, quadtrees, geohashes, S2/H3, R-trees, make "what's near here?" fast.
 
-> [!INTERVIEW] Geometry appears in "K closest points to origin" (heap), rectangle overlap and area, valid square, max points on a line (slopes via GCD), and in design rounds for proximity search (geohash, quadtree, H3) — e.g. designing Uber or Yelp.
+> [!INTERVIEW] Geometry appears in "K closest points to origin" (heap), rectangle overlap and area, valid square, max points on a line (slopes via GCD), and in design rounds for proximity search (geohash, quadtree, H3), e.g. designing Uber or Yelp.
 
 ::quiz {"q":"What does the sign of the cross product of OA and OB tell you?","options":["The distance between A and B","Whether going O→A→B turns left, right, or goes straight","The angle in degrees","Whether the points are integers"],"answer":1,"explain":"Positive = counter-clockwise (left), negative = clockwise (right), zero = collinear."}
 
 ::quiz {"q":"A ray from a point crosses a polygon's edges 3 times. Where is the point?","options":["Outside","Inside","On the edge","Unknown"],"answer":1,"explain":"Odd number of crossings means inside."}
 
-::quiz {"q":"Why can't you use plain Euclidean distance on latitude/longitude for long distances?","options":["It's too slow","The Earth is a sphere — degrees of longitude shrink toward the poles; use the haversine formula","Coordinates are negative","GPS is inaccurate"],"answer":1,"explain":"Great-circle distance accounts for the curvature."}
+::quiz {"q":"Why can't you use plain Euclidean distance on latitude/longitude for long distances?","options":["It's too slow","The Earth is a sphere, degrees of longitude shrink toward the poles; use the haversine formula","Coordinates are negative","GPS is inaccurate"],"answer":1,"explain":"Great-circle distance accounts for the curvature."}

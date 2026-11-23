@@ -10,7 +10,7 @@ function alloc() {
   if (need > TOTAL) return (msg.value = 'Too large for the arena.')
   const bs = blocks.value
   let i = bs.map((b, k) => [b, k]).filter(([b]) => !b.used && b.size >= need).sort((a, b) => a[0].size - b[0].size)[0]?.[1]
-  if (i === undefined) return (msg.value = `Out of memory for ${need} KiB (external fragmentation — free space exists but no block of that order).`)
+  if (i === undefined) return (msg.value = `Out of memory for ${need} KiB (external fragmentation, free space exists but no block of that order).`)
   let splits = 0
   while (bs[i].size > need) { const b = bs[i], h = b.size / 2; bs.splice(i, 1, { off: b.off, size: h, used: false }, { off: b.off + h, size: h, used: false }); splits++ }
   const tag = 'A' + n.value++; bs[i].used = true; bs[i].tag = tag; bs[i].req = req.value; bs[i].color = COL[(n.value - 2) % 8]

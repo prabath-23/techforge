@@ -22,7 +22,7 @@ const NX = [60, 220, 380], ny = (n, i) => 30 + (i + .5) * 220 / n
 <template>
   <div :key="tick">
     <div class="w-title">Neural network learning XOR (backpropagation)</div>
-    <p class="w-sub">XOR is not linearly separable — a single neuron can't learn it, a hidden layer can. Blue = positive weight, red = negative, thickness = magnitude.</p>
+    <p class="w-sub">XOR is not linearly separable, a single neuron can't learn it, a hidden layer can. Blue = positive weight, red = negative, thickness = magnitude.</p>
     <div class="w-row"><button class="btn small" @click="go">{{ running ? 'Pause' : 'Train' }}</button><button class="btn ghost small" @click="train(1)">1 epoch</button><button class="btn ghost small" @click="init">Re-initialize</button>
       <select v-model="act"><option value="tanh">tanh</option><option value="relu">ReLU</option><option value="sigmoid">sigmoid</option></select>
       <label>lr <input type="range" min="0.05" max="2" step="0.05" v-model.number="lr" /> {{ lr }}</label></div>

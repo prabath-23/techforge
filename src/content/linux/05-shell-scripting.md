@@ -1,14 +1,14 @@
 ---
 title: Shell Scripting That Doesn't Break
-summary: Writing bash scripts that behave predictably — the safety settings every script should start with, variables, quoting, conditionals, loops and functions, handling arguments and errors, cleaning up with traps, scheduling with cron, and knowing when a script should become a real program.
+summary: Writing bash scripts that behave predictably, the safety settings every script should start with, variables, quoting, conditionals, loops and functions, handling arguments and errors, cleaning up with traps, scheduling with cron, and knowing when a script should become a real program.
 ---
 
-::widget Scene {"title": "set -euo pipefail: scripts that stop on errors", "sub": "a backup script that silently \"succeeded\" — and the fix", "nodes": [{"id": "sc", "kind": "cells", "label": "backup.sh", "x": 3.1, "y": 3.1, "values": ["cd $DIR", "pg_dump | gzip", "upload", "rm -rf old/*"]}], "metrics": [["line", "Line"], ["what", "What happened"], ["res", "Outcome"]], "steps": [{"short": "Script", "tag": "Setup", "title": "A nightly backup script without safety flags", "body": "<p>Bash keeps going after a failed command by default.</p>", "metrics": {"line": ["—"], "what": ["—"], "res": ["—"]}}, {"short": "Typo", "tag": "Bug 1", "title": "DIR is unset (typo in the env file)", "body": "<p>cd $DIR becomes plain cd → the home directory. No error.</p>", "set": {"sc": {"marks": {"0": "red"}, "ptr": {}}}, "metrics": {"line": ["cd $DIR"], "what": ["unset var → cd ~"]}}, {"short": "Dump", "tag": "Bug 2", "title": "pg_dump fails (bad password) but gzip succeeds", "body": "<p>A pipeline's status is the LAST command's. Exit code 0 with an empty file.</p>", "set": {"sc": {"marks": {"0": "red", "1": "red"}, "ptr": {}}}, "metrics": {"line": ["pg_dump | gzip"], "what": ["failure hidden by pipe"]}}, {"short": "Up", "tag": "Bug 3", "title": "Upload \"succeeds\" with an empty backup", "body": "<p>And the rm deletes old backups from the wrong directory.</p>", "set": {"sc": {"marks": {"0": "red", "1": "red", "2": "orange", "3": "red"}, "ptr": {}}}, "metrics": {"line": ["rm -rf old/*"], "what": ["deleted the wrong files"], "res": ["disaster", "bad"]}}, {"short": "e", "tag": "Fix", "title": "set -e: exit on the first failing command", "body": "<p>The script stops instead of ploughing on.</p>", "set": {"sc": {"marks": {}, "ptr": {}}}, "metrics": {"line": ["set -e"], "what": ["stop on error"]}}, {"short": "u", "tag": "Fix", "title": "set -u: using an unset variable is an error", "body": "<p>cd $DIR now fails loudly. Also quote variables: cd \"$DIR\".</p>", "metrics": {"line": ["set -u"], "what": ["catch typos"]}}, {"short": "pipefail", "tag": "Fix", "title": "set -o pipefail: a pipeline fails if any part fails", "body": "<p>pg_dump's failure now stops the script.</p>", "metrics": {"line": ["set -o pipefail"], "what": ["no hidden failures"]}}, {"short": "Trap", "tag": "Cleanup", "title": "trap cleanup EXIT and alert on failure", "body": "<p>Remove temp files, send an alert with the failing line.</p>", "set": {"sc": {"marks": {"0": "green", "1": "green", "2": "green", "3": "green"}, "ptr": {}}}, "metrics": {"res": ["fails loudly, safely", "good"]}}, {"short": "Lint", "tag": "Habit", "title": "Run shellcheck", "body": "<p>It catches unquoted variables, useless cats and many subtle bugs. When a script passes ~100 lines, consider Python.</p>", "note": {"kind": "key", "text": "Start every script with set -euo pipefail, quote \"$variables\", trap for cleanup, and lint with shellcheck."}}]}
+::widget Scene {"title": "set -euo pipefail: scripts that stop on errors", "sub": "a backup script that silently \"succeeded\", and the fix", "nodes": [{"id": "sc", "kind": "cells", "label": "backup.sh", "x": 3.1, "y": 3.1, "values": ["cd $DIR", "pg_dump | gzip", "upload", "rm -rf old/*"]}], "metrics": [["line", "Line"], ["what", "What happened"], ["res", "Outcome"]], "steps": [{"short": "Script", "tag": "Setup", "title": "A nightly backup script without safety flags", "body": "<p>Bash keeps going after a failed command by default.</p>", "metrics": {"line": ["-"], "what": ["-"], "res": ["-"]}}, {"short": "Typo", "tag": "Bug 1", "title": "DIR is unset (typo in the env file)", "body": "<p>cd $DIR becomes plain cd → the home directory. No error.</p>", "set": {"sc": {"marks": {"0": "red"}, "ptr": {}}}, "metrics": {"line": ["cd $DIR"], "what": ["unset var → cd ~"]}}, {"short": "Dump", "tag": "Bug 2", "title": "pg_dump fails (bad password) but gzip succeeds", "body": "<p>A pipeline's status is the LAST command's. Exit code 0 with an empty file.</p>", "set": {"sc": {"marks": {"0": "red", "1": "red"}, "ptr": {}}}, "metrics": {"line": ["pg_dump | gzip"], "what": ["failure hidden by pipe"]}}, {"short": "Up", "tag": "Bug 3", "title": "Upload \"succeeds\" with an empty backup", "body": "<p>And the rm deletes old backups from the wrong directory.</p>", "set": {"sc": {"marks": {"0": "red", "1": "red", "2": "orange", "3": "red"}, "ptr": {}}}, "metrics": {"line": ["rm -rf old/*"], "what": ["deleted the wrong files"], "res": ["disaster", "bad"]}}, {"short": "e", "tag": "Fix", "title": "set -e: exit on the first failing command", "body": "<p>The script stops instead of ploughing on.</p>", "set": {"sc": {"marks": {}, "ptr": {}}}, "metrics": {"line": ["set -e"], "what": ["stop on error"]}}, {"short": "u", "tag": "Fix", "title": "set -u: using an unset variable is an error", "body": "<p>cd $DIR now fails loudly. Also quote variables: cd \"$DIR\".</p>", "metrics": {"line": ["set -u"], "what": ["catch typos"]}}, {"short": "pipefail", "tag": "Fix", "title": "set -o pipefail: a pipeline fails if any part fails", "body": "<p>pg_dump's failure now stops the script.</p>", "metrics": {"line": ["set -o pipefail"], "what": ["no hidden failures"]}}, {"short": "Trap", "tag": "Cleanup", "title": "trap cleanup EXIT and alert on failure", "body": "<p>Remove temp files, send an alert with the failing line.</p>", "set": {"sc": {"marks": {"0": "green", "1": "green", "2": "green", "3": "green"}, "ptr": {}}}, "metrics": {"res": ["fails loudly, safely", "good"]}}, {"short": "Lint", "tag": "Habit", "title": "Run shellcheck", "body": "<p>It catches unquoted variables, useless cats and many subtle bugs. When a script passes ~100 lines, consider Python.</p>", "note": {"kind": "key", "text": "Start every script with set -euo pipefail, quote \"$variables\", trap for cleanup, and lint with shellcheck."}}]}
 
 
 ## The backup script that deleted everything
 
-> [!STORY] A team's nightly cleanup script contained `rm -rf "$BACKUP_DIR/"*`. One night the config file that set `BACKUP_DIR` failed to load. The variable was empty, so the command became `rm -rf /*` — and the script, running as root, started deleting the server. Real incidents like this (including a well-known one in a popular game's Linux installer in 2015) come from scripts that **keep going** after something unexpected happens. A few lines at the top of every script prevent most of them.
+> [!STORY] A team's nightly cleanup script contained `rm -rf "$BACKUP_DIR/"*`. One night the config file that set `BACKUP_DIR` failed to load. The variable was empty, so the command became `rm -rf /*`, and the script, running as root, started deleting the server. Real incidents like this (including a well-known one in a popular game's Linux installer in 2015) come from scripts that **keep going** after something unexpected happens. A few lines at the top of every script prevent most of them.
 
 ## The safety header
 
@@ -17,9 +17,9 @@ summary: Writing bash scripts that behave predictably — the safety settings ev
 set -euo pipefail
 ```
 
-- `set -e` — **exit** immediately if any command fails, instead of carrying on with broken state.
-- `set -u` — treat an **unset variable** as an error. The story's empty `BACKUP_DIR` would have stopped the script.
-- `set -o pipefail` — a pipeline fails if **any** stage fails, not just the last one.
+- `set -e`, **exit** immediately if any command fails, instead of carrying on with broken state.
+- `set -u`, treat an **unset variable** as an error. The story's empty `BACKUP_DIR` would have stopped the script.
+- `set -o pipefail`, a pipeline fails if **any** stage fails, not just the last one.
 
 And for destructive commands, be explicit:
 
@@ -80,7 +80,7 @@ done < urls.txt
 for i in {1..5}; do echo "attempt $i"; done
 ```
 
-> [!WARN] Never loop over `$(ls)` or `$(cat file)` — names with spaces get split apart. Use globs (`for f in *.log`) or `while read -r`.
+> [!WARN] Never loop over `$(ls)` or `$(cat file)`, names with spaces get split apart. Use globs (`for f in *.log`) or `while read -r`.
 
 ## Functions, arguments and exit codes
 
@@ -115,7 +115,7 @@ retry 5 curl -fsS "https://deploy.example.com/$env/health"
 
 ```bash
 tmpdir=$(mktemp -d)
-trap 'rm -rf -- "$tmpdir"' EXIT         # runs however the script ends — success, error or Ctrl-C
+trap 'rm -rf -- "$tmpdir"' EXIT         # runs however the script ends, success, error or Ctrl-C
 
 curl -fsS "$url" -o "$tmpdir/data.json"
 process "$tmpdir/data.json"
@@ -156,7 +156,7 @@ log "done"
   */5 * *   *   *     /opt/scripts/healthcheck.sh
 ```
 
-Cron runs with a **minimal environment** — a short `PATH` and none of your shell settings — so use full paths and set variables inside the script. Always redirect output somewhere you'll see it. On systemd machines, **timers** offer logging and retry behavior for free.
+Cron runs with a **minimal environment** a short `PATH` and none of your shell settings, so use full paths and set variables inside the script. Always redirect output somewhere you'll see it. On systemd machines, **timers** offer logging and retry behavior for free.
 
 ## Check your scripts
 
@@ -167,14 +167,14 @@ Cron runs with a **minimal environment** — a short `PATH` and none of your she
 > [!RECAP]
 > - Start every script with `#!/usr/bin/env bash` and **`set -euo pipefail`**; guard destructive commands with `${VAR:?}`.
 > - **Quote** variables; use `[[ … ]]`, `for … in` globs and `while read -r` safely.
-> - Use **functions**, `local`, meaningful **exit codes**, messages to **stderr**, and **trap … EXIT** for cleanup.
+> - Use **functions** `local`, meaningful **exit codes** messages to **stderr** and **trap … EXIT** for cleanup.
 > - Cron needs full paths and logged output; consider systemd timers.
 > - Lint with **ShellCheck**; move to a real language when scripts grow.
 
-> [!INTERVIEW] DevOps and SRE interviews may ask you to write a short script (retry a health check, rotate logs, loop over hosts) or spot bugs in one — unquoted variables, missing `set -e`, parsing `ls`.
+> [!INTERVIEW] DevOps and SRE interviews may ask you to write a short script (retry a health check, rotate logs, loop over hosts) or spot bugs in one, unquoted variables, missing `set -e`, parsing `ls`.
 
 ::quiz {"q":"What does set -u protect against?","options":["Slow commands","Using an unset variable, which would otherwise silently become empty","Unicode errors","Running as root"],"answer":1,"explain":"It would have stopped the empty BACKUP_DIR disaster."}
 
-::quiz {"q":"How do you ensure a temp directory is removed even if the script fails?","options":["Delete it at the last line","trap 'rm -rf -- \"$tmpdir\"' EXIT","Use /tmp — it's auto-deleted","set -e"],"answer":1,"explain":"The EXIT trap runs on success, failure and interruption."}
+::quiz {"q":"How do you ensure a temp directory is removed even if the script fails?","options":["Delete it at the last line","trap 'rm -rf -- \"$tmpdir\"' EXIT","Use /tmp, it's auto-deleted","set -e"],"answer":1,"explain":"The EXIT trap runs on success, failure and interruption."}
 
-::quiz {"q":"Why does a script that works in your terminal fail under cron?","options":["Cron can't run bash","Cron runs with a minimal environment — different PATH and no shell profile","Cron runs as a different OS","Scripts must be compiled"],"answer":1,"explain":"Use full paths and set variables inside the script."}
+::quiz {"q":"Why does a script that works in your terminal fail under cron?","options":["Cron can't run bash","Cron runs with a minimal environment, different PATH and no shell profile","Cron runs as a different OS","Scripts must be compiled"],"answer":1,"explain":"Use full paths and set variables inside the script."}

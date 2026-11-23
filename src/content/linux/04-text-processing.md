@@ -1,16 +1,16 @@
 ---
-title: Text Processing — grep, sed, awk, sort, uniq and jq
-summary: The tools that let you answer questions about gigabytes of logs and data in seconds — searching with grep and regular expressions, slicing columns with cut and awk, counting and ranking with sort and uniq, editing with sed, and querying JSON with jq — built up through real log-analysis tasks.
+title: Text Processing: grep, sed, awk, sort, uniq and jq
+summary: The tools that let you answer questions about gigabytes of logs and data in seconds, searching with grep and regular expressions, slicing columns with cut and awk, counting and ranking with sort and uniq, editing with sed, and querying JSON with jq, built up through real log-analysis tasks.
 ---
 
-::widget Scene {"title": "Count and rank with sort | uniq -c", "sub": "which API endpoints return the most 500 errors?", "nodes": [{"id": "rows", "kind": "cells", "label": "log lines (status · path)", "x": 3.1, "y": 3.1, "values": ["200 /api/a", "500 /api/pay", "200 /api/b", "500 /api/pay", "500 /api/cart"]}], "metrics": [["cmd", "Stage"], ["out", "Result"]], "steps": [{"short": "Grep", "tag": "Filter", "title": "grep ' 500 ' access.log", "body": "<p>Keep only error lines. -c counts, -v inverts, -E for regex.</p>", "set": {"rows": {"marks": {"1": "red", "3": "red", "4": "red", "0": "dark", "2": "dark"}, "ptr": {}}}, "metrics": {"cmd": ["grep 500"], "out": ["3 lines"]}}, {"short": "Cut", "tag": "Extract", "title": "awk '{print $7}': just the path", "body": "<p>Or cut -d' ' -f7 for simple delimiters.</p>", "set": {"rows": {"marks": {}, "ptr": {}, "values": ["/api/pay", "/api/pay", "/api/cart", "", ""]}}, "metrics": {"cmd": ["awk print $7"], "out": ["paths"]}}, {"short": "Sort", "tag": "Group", "title": "sort", "body": "<p>Bring identical paths together.</p>", "set": {"rows": {"marks": {"0": "blue", "1": "blue"}, "ptr": {}, "values": ["/api/cart", "/api/pay", "/api/pay", "", ""]}}}, {"short": "Uniq", "tag": "Count", "title": "uniq -c", "body": "<p>\"1 /api/cart\", \"2 /api/pay\".</p>", "set": {"rows": {"marks": {}, "ptr": {}, "values": ["1 /api/cart", "2 /api/pay", "", "", ""]}}, "metrics": {"cmd": ["uniq -c"], "out": ["counts"]}}, {"short": "Rank", "tag": "Rank", "title": "sort -rn | head", "body": "<p>/api/pay is the worst offender.</p>", "set": {"rows": {"marks": {"0": "red"}, "ptr": {}, "values": ["2 /api/pay", "1 /api/cart", "", "", ""]}}, "metrics": {"cmd": ["sort -rn"], "out": ["/api/pay first", "good"]}}, {"short": "Time", "tag": "Narrow", "title": "When did it start? Extract the hour and count per hour", "body": "<p>awk '{print substr($4, 14, 2)}' | sort | uniq -c — errors began at 14:00.</p>"}, {"short": "Sed", "tag": "Transform", "title": "sed to rewrite text in a stream", "body": "<p>sed 's#/api/v1#/api#' normalises paths; sed -i edits files in place (back them up first).</p>"}, {"short": "JSON", "tag": "Structured", "title": "JSON logs? Use jq", "body": "<p>jq -r 'select(.status==500) | .path' | sort | uniq -c | sort -rn.</p>", "note": {"kind": "key", "text": "grep filters, awk/cut extract, sort groups, uniq -c counts, sort -rn ranks, sed transforms, jq handles JSON."}}]}
+::widget Scene {"title": "Count and rank with sort | uniq -c", "sub": "which API endpoints return the most 500 errors?", "nodes": [{"id": "rows", "kind": "cells", "label": "log lines (status · path)", "x": 3.1, "y": 3.1, "values": ["200 /api/a", "500 /api/pay", "200 /api/b", "500 /api/pay", "500 /api/cart"]}], "metrics": [["cmd", "Stage"], ["out", "Result"]], "steps": [{"short": "Grep", "tag": "Filter", "title": "grep ' 500 ' access.log", "body": "<p>Keep only error lines. -c counts, -v inverts, -E for regex.</p>", "set": {"rows": {"marks": {"1": "red", "3": "red", "4": "red", "0": "dark", "2": "dark"}, "ptr": {}}}, "metrics": {"cmd": ["grep 500"], "out": ["3 lines"]}}, {"short": "Cut", "tag": "Extract", "title": "awk '{print $7}': just the path", "body": "<p>Or cut -d' ' -f7 for simple delimiters.</p>", "set": {"rows": {"marks": {}, "ptr": {}, "values": ["/api/pay", "/api/pay", "/api/cart", "", ""]}}, "metrics": {"cmd": ["awk print $7"], "out": ["paths"]}}, {"short": "Sort", "tag": "Group", "title": "sort", "body": "<p>Bring identical paths together.</p>", "set": {"rows": {"marks": {"0": "blue", "1": "blue"}, "ptr": {}, "values": ["/api/cart", "/api/pay", "/api/pay", "", ""]}}}, {"short": "Uniq", "tag": "Count", "title": "uniq -c", "body": "<p>\"1 /api/cart\", \"2 /api/pay\".</p>", "set": {"rows": {"marks": {}, "ptr": {}, "values": ["1 /api/cart", "2 /api/pay", "", "", ""]}}, "metrics": {"cmd": ["uniq -c"], "out": ["counts"]}}, {"short": "Rank", "tag": "Rank", "title": "sort -rn | head", "body": "<p>/api/pay is the worst offender.</p>", "set": {"rows": {"marks": {"0": "red"}, "ptr": {}, "values": ["2 /api/pay", "1 /api/cart", "", "", ""]}}, "metrics": {"cmd": ["sort -rn"], "out": ["/api/pay first", "good"]}}, {"short": "Time", "tag": "Narrow", "title": "When did it start? Extract the hour and count per hour", "body": "<p>awk '{print substr($4, 14, 2)}' | sort | uniq -c, errors began at 14:00.</p>"}, {"short": "Sed", "tag": "Transform", "title": "sed to rewrite text in a stream", "body": "<p>sed 's#/api/v1#/api#' normalises paths; sed -i edits files in place (back them up first).</p>"}, {"short": "JSON", "tag": "Structured", "title": "JSON logs? Use jq", "body": "<p>jq -r 'select(.status==500) | .path' | sort | uniq -c | sort -rn.</p>", "note": {"kind": "key", "text": "grep filters, awk/cut extract, sort groups, uniq -c counts, sort -rn ranks, sed transforms, jq handles JSON."}}]}
 
 
 ## Answering questions about a 4 GB log
 
-> [!STORY] Black Friday, 11 am. Error rates are climbing and the team needs answers: Which URLs are failing? Since when? Which customers are affected? Is one server worse than the others? Opening the log in an editor isn't an option — it's 4 GB and growing. Every one of these questions can be answered in a single line of shell, in seconds, with a handful of tools that have existed since the 1970s.
+> [!STORY] Black Friday, 11 am. Error rates are climbing and the team needs answers: Which URLs are failing? Since when? Which customers are affected? Is one server worse than the others? Opening the log in an editor isn't an option, it's 4 GB and growing. Every one of these questions can be answered in a single line of shell, in seconds, with a handful of tools that have existed since the 1970s.
 
-Our example — a web server access log, one request per line:
+Our example, a web server access log, one request per line:
 
 ```text
 203.0.113.9 - - [23/Nov/2026:11:02:14 +0530] "GET /api/cart HTTP/1.1" 200 512 0.041
@@ -59,7 +59,7 @@ Read it as an assembly line (chapter 1):
 
 1. `grep` keeps failing requests.
 2. `cut -d' ' -f7` keeps only field 7, the path.
-3. `sort` puts identical paths next to each other — `uniq` only merges **adjacent** duplicates.
+3. `sort` puts identical paths next to each other, `uniq` only merges **adjacent** duplicates.
 4. `uniq -c` collapses duplicates and prefixes a count.
 5. `sort -rn` sorts by that number, largest first.
 6. `head` shows the top 10.
@@ -87,14 +87,14 @@ awk '{sum[$9] += $11; n[$9]++} END {for (s in sum) printf "%s %.3f\n", s, sum[s]
 awk '$9 == 500 {print substr($4, 2, 17)}' access.log | uniq -c
 ```
 
-The last one shows exactly **when** errors started — the minute they jump from 2 to 400.
+The last one shows exactly **when** errors started, the minute they jump from 2 to 400.
 
 > [!ANALOGY] If `cut` is a pair of scissors, `awk` is a spreadsheet you can drive from one line: filter rows, pick columns, sum and group.
 
 ## sed: edit streams of text
 
 ```bash
-sed 's/http:/https:/g' links.txt          # replace every http: with https:, print result
+sed 's/http:/https:/g' links.txt          # replace every http: with https: print result
 sed -i.bak 's/DEBUG/INFO/' config.ini      # edit the file in place, keeping a .bak backup
 sed -n '100,120p' big.log                  # print only lines 100–120
 sed '/^#/d' settings.conf                  # delete comment lines
@@ -130,11 +130,11 @@ jq -r 'select(.level=="error") | .provider' app.jsonl | sort | uniq -c | sort -r
 kubectl get pods -o json | jq -r '.items[] | select(.status.phase != "Running") | .metadata.name'
 ```
 
-> [!EXAMPLE] **Solving the Black Friday incident.** `awk` shows 500s started at 11:00. The top-paths pipeline points to `/api/checkout`. `jq` on the JSON app logs shows every error has `"provider": "provider-b"` and `"error": "timeout"`. Total time: about four minutes, all from the command line. The fix — route payments to the other provider — follows immediately.
+> [!EXAMPLE] **Solving the Black Friday incident.** `awk` shows 500s started at 11:00. The top-paths pipeline points to `/api/checkout`. `jq` on the JSON app logs shows every error has `"provider": "provider-b"` and `"error": "timeout"`. Total time: about four minutes, all from the command line. The fix, route payments to the other provider, follows immediately.
 
 > [!RECAP]
 > - **grep** finds lines (with regular expressions, `-v`, `-c`, `-C`, `-r`); **ripgrep** is faster.
-> - **cut | sort | uniq -c | sort -rn | head** is the classic "count and rank" pipeline — `uniq` needs sorted input.
+> - **cut | sort | uniq -c | sort -rn | head** is the classic "count and rank" pipeline, `uniq` needs sorted input.
 > - **awk** filters and computes over columns: conditions, sums, averages, grouping.
 > - **sed** substitutes and deletes text in streams or files.
 > - **jq** queries JSON logs and API responses.

@@ -25,7 +25,7 @@ function step() {
 let timer = setInterval(step, 120); const running = ref(true)
 const toggle = () => { running.value ? clearInterval(timer) : (timer = setInterval(step, 120)); running.value = !running.value }
 onUnmounted(() => clearInterval(timer))
-const write = () => { const l = leader(); if (!l) return ev('No leader — client write rejected (unavailable during election)'); l.log.push('x=' + Math.floor(Math.random() * 100)); ev(`Client write appended to leader ${l.id}'s log at index ${l.log.length}`) }
+const write = () => { const l = leader(); if (!l) return ev('No leader, client write rejected (unavailable during election)'); l.log.push('x=' + Math.floor(Math.random() * 100)); ev(`Client write appended to leader ${l.id}'s log at index ${l.log.length}`) }
 const kill = n => { n.alive = !n.alive; if (!n.alive) { ev(`Node ${n.id} crashed${n.role === 'leader' ? ' (was leader!)' : ''}`); n.role = 'follower' } else { n.elapsed = 0; ev(`Node ${n.id} restarted`) } }
 const P = i => [380 + 230 * Math.cos(-Math.PI / 2 + i * 2 * Math.PI / N), 170 + 130 * Math.sin(-Math.PI / 2 + i * 2 * Math.PI / N)]
 const COL = { leader: 'var(--ok)', candidate: 'var(--warn)', follower: 'var(--node)' }

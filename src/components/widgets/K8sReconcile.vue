@@ -10,7 +10,7 @@ function reconcile() {
   pods.value.forEach(p => { if (p.phase === 'Pending') p.phase = 'ContainerCreating'; else if (p.phase === 'ContainerCreating') { p.phase = 'Running'; ev(`${p.name} Running (readiness probe passed)`) } })
   const live = pods.value.filter(p => p.phase !== 'Terminating'), cur = live.filter(p => p.v === version.value), old = live.filter(p => p.v !== version.value)
   pods.value = pods.value.filter(p => p.phase !== 'Terminating' || (p.ttl-- > 0))
-  const up = nodes.value.filter(n => n.up); if (!up.length) return ev('No schedulable nodes — pods stay Pending')
+  const up = nodes.value.filter(n => n.up); if (!up.length) return ev('No schedulable nodes, pods stay Pending')
   const create = () => { const node = up.map(n => [n, pods.value.filter(p => p.node === n.name).length]).sort((a, b) => a[1] - b[1])[0][0]
     const p = { name: `web-${version.value}-${(++seq).toString(36)}`, v: version.value, node: node.name, phase: 'Pending' }; pods.value.push(p); ev(`scheduler: ${p.name} → ${node.name} (least loaded)`) }
   if (old.length) { // rolling update
@@ -22,7 +22,7 @@ function reconcile() {
   if (cur.length > desired.value) { const p = cur.at(-1); p.phase = 'Terminating'; p.ttl = 1; ev(`scale down: terminate ${p.name}`) }
 }
 const t = setInterval(reconcile, 900); onUnmounted(() => clearInterval(t))
-const killPod = p => { pods.value = pods.value.filter(x => x !== p); ev(`${p.name} crashed — controller notices actual (${pods.value.length}) ≠ desired (${desired.value})`) }
+const killPod = p => { pods.value = pods.value.filter(x => x !== p); ev(`${p.name} crashed, controller notices actual (${pods.value.length}) ≠ desired (${desired.value})`) }
 const COL = { Running: 'var(--ok)', Pending: 'var(--muted)', ContainerCreating: 'var(--warn)', Terminating: 'var(--bad)' }
 </script>
 

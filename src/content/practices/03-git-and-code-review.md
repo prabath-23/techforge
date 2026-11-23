@@ -1,9 +1,9 @@
 ---
-title: Git and Code Review — How Teams Change Code Together
+title: Git and Code Review: How Teams Change Code Together
 summary: What Git really stores (snapshots, not differences), why a branch is just a pointer, merging vs rebasing explained with a picture in your head, recovering from mistakes, branching strategies teams actually use, and how to write and review pull requests that make the team better.
 ---
 
-::widget Scene {"title": "Git: a branch is just a pointer", "sub": "commit, branch, diverge, merge vs rebase, and recovering a \"lost\" commit", "nodes": [{"id": "c1", "kind": "node", "label": "c1", "x": 3.1, "y": 3.1, "size": 1.9}, {"id": "c2", "kind": "node", "label": "c2", "x": 6.7, "y": -0.5, "size": 1.9}, {"id": "c3", "kind": "node", "label": "c3", "x": 7.82, "y": -6.58, "size": 1.9}, {"id": "c4", "kind": "node", "label": "c4", "x": 13.4, "y": -1.0, "size": 1.9}, {"id": "m", "kind": "node", "label": "M", "x": 13.9, "y": -7.7, "size": 1.9}, {"id": "c4r", "kind": "node", "label": "c4'", "x": 8.63, "y": -12.97, "size": 1.9}], "links": [["c1", "c2"], ["c2", "c3"], ["c2", "c4"], ["c3", "m"], ["c4", "m"], ["c3", "c4r", {"dashed": true}]], "metrics": [["main", "main →"], ["feat", "feature →"], ["head", "HEAD"]], "steps": [{"short": "Commit", "tag": "Commits", "title": "A commit = snapshot of all files + pointer to its parent", "body": "<p>Named by a hash of its contents.</p>", "show": ["c1", "c2"], "set": {"c2": {"badge": "main"}}, "metrics": {"main": ["c2"], "feat": ["—"], "head": ["main"]}}, {"short": "Branch", "tag": "Branch", "title": "git switch -c feature: a new pointer at c2", "body": "<p>Instant and free — it's a 41-byte file containing a hash.</p>", "set": {"c2": {"badge": "main, feature"}}, "metrics": {"feat": ["c2"], "head": ["feature"]}}, {"short": "Work", "tag": "Diverge", "title": "You commit c4 on feature; a teammate pushes c3 to main", "body": "<p>The histories have diverged.</p>", "show": ["c1", "c2", "c3", "c4"], "set": {"c2": {"badge": null}, "c3": {"badge": "main"}, "c4": {"badge": "feature"}}, "metrics": {"main": ["c3"], "feat": ["c4"]}}, {"short": "Merge", "tag": "Merge", "title": "Option 1: merge — a new commit M with two parents", "body": "<p>History shows exactly what happened. Conflicts are resolved once, in M.</p>", "show": ["c1", "c2", "c3", "c4", "m"], "set": {"c3": {"badge": null}, "m": {"badge": "main"}}, "hot": [["c3", "m"], ["c4", "m"]], "metrics": {"main": ["M"]}}, {"short": "Rebase", "tag": "Rebase", "title": "Option 2: rebase — replay c4 on top of c3 as a new commit c4'", "body": "<p>A straight line. c4' has a new hash: it's a new commit.</p>", "show": ["c1", "c2", "c3", "c4", "c4r"], "set": {"m": {"badge": null}, "c3": {"badge": "main"}, "c4": {"dim": true, "badge": "old"}, "c4r": {"badge": "feature"}}, "metrics": {"main": ["c3"], "feat": ["c4'"]}}, {"short": "Never", "tag": "Rule", "title": "Never rebase commits others already pulled", "body": "<p>Their history still has c4; yours has c4'. Rebase your own unpublished work; use --force-with-lease if you must update your own pushed branch.</p>"}, {"short": "Lost", "tag": "Recovery", "title": "\"I reset and lost c4!\" — git reflog", "body": "<p>The reflog lists everywhere HEAD has been. git switch -c rescue c4 and it's back.</p>", "set": {"c4": {"dim": false, "badge": "found via reflog"}}}, {"short": "Undo", "tag": "Undo", "title": "Undo a pushed commit safely: git revert", "body": "<p>Adds a new commit that reverses it — no history rewrite.</p>"}, {"short": "PR", "tag": "Review", "title": "Small PRs, reviewed promptly and kindly", "body": "<p>Under a few hundred lines, one purpose, a description of why and how it was tested.</p>", "note": {"kind": "key", "text": "Commits are snapshots; branches are movable pointers. Merge preserves history; rebase rewrites it (only for unshared work). reflog recovers, revert undoes safely."}}]}
+::widget Scene {"title": "Git: a branch is just a pointer", "sub": "commit, branch, diverge, merge vs rebase, and recovering a \"lost\" commit", "nodes": [{"id": "c1", "kind": "node", "label": "c1", "x": 3.1, "y": 3.1, "size": 1.9}, {"id": "c2", "kind": "node", "label": "c2", "x": 6.7, "y": -0.5, "size": 1.9}, {"id": "c3", "kind": "node", "label": "c3", "x": 7.82, "y": -6.58, "size": 1.9}, {"id": "c4", "kind": "node", "label": "c4", "x": 13.4, "y": -1.0, "size": 1.9}, {"id": "m", "kind": "node", "label": "M", "x": 13.9, "y": -7.7, "size": 1.9}, {"id": "c4r", "kind": "node", "label": "c4'", "x": 8.63, "y": -12.97, "size": 1.9}], "links": [["c1", "c2"], ["c2", "c3"], ["c2", "c4"], ["c3", "m"], ["c4", "m"], ["c3", "c4r", {"dashed": true}]], "metrics": [["main", "main →"], ["feat", "feature →"], ["head", "HEAD"]], "steps": [{"short": "Commit", "tag": "Commits", "title": "A commit = snapshot of all files + pointer to its parent", "body": "<p>Named by a hash of its contents.</p>", "show": ["c1", "c2"], "set": {"c2": {"badge": "main"}}, "metrics": {"main": ["c2"], "feat": ["-"], "head": ["main"]}}, {"short": "Branch", "tag": "Branch", "title": "git switch -c feature: a new pointer at c2", "body": "<p>Instant and free, it's a 41-byte file containing a hash.</p>", "set": {"c2": {"badge": "main, feature"}}, "metrics": {"feat": ["c2"], "head": ["feature"]}}, {"short": "Work", "tag": "Diverge", "title": "You commit c4 on feature; a teammate pushes c3 to main", "body": "<p>The histories have diverged.</p>", "show": ["c1", "c2", "c3", "c4"], "set": {"c2": {"badge": null}, "c3": {"badge": "main"}, "c4": {"badge": "feature"}}, "metrics": {"main": ["c3"], "feat": ["c4"]}}, {"short": "Merge", "tag": "Merge", "title": "Option 1: merge, a new commit M with two parents", "body": "<p>History shows exactly what happened. Conflicts are resolved once, in M.</p>", "show": ["c1", "c2", "c3", "c4", "m"], "set": {"c3": {"badge": null}, "m": {"badge": "main"}}, "hot": [["c3", "m"], ["c4", "m"]], "metrics": {"main": ["M"]}}, {"short": "Rebase", "tag": "Rebase", "title": "Option 2: rebase, replay c4 on top of c3 as a new commit c4'", "body": "<p>A straight line. c4' has a new hash: it's a new commit.</p>", "show": ["c1", "c2", "c3", "c4", "c4r"], "set": {"m": {"badge": null}, "c3": {"badge": "main"}, "c4": {"dim": true, "badge": "old"}, "c4r": {"badge": "feature"}}, "metrics": {"main": ["c3"], "feat": ["c4'"]}}, {"short": "Never", "tag": "Rule", "title": "Never rebase commits others already pulled", "body": "<p>Their history still has c4; yours has c4'. Rebase your own unpublished work; use --force-with-lease if you must update your own pushed branch.</p>"}, {"short": "Lost", "tag": "Recovery", "title": "\"I reset and lost c4!\", git reflog", "body": "<p>The reflog lists everywhere HEAD has been. git switch -c rescue c4 and it's back.</p>", "set": {"c4": {"dim": false, "badge": "found via reflog"}}}, {"short": "Undo", "tag": "Undo", "title": "Undo a pushed commit safely: git revert", "body": "<p>Adds a new commit that reverses it, no history rewrite.</p>"}, {"short": "PR", "tag": "Review", "title": "Small PRs, reviewed promptly and kindly", "body": "<p>Under a few hundred lines, one purpose, a description of why and how it was tested.</p>", "note": {"kind": "key", "text": "Commits are snapshots; branches are movable pointers. Merge preserves history; rebase rewrites it (only for unshared work). reflog recovers, revert undoes safely."}}]}
 
 
 ## The folder called final_v3_REALLY_FINAL
@@ -12,17 +12,17 @@ summary: What Git really stores (snapshots, not differences), why a branch is ju
 
 ## What Git actually stores
 
-Most people think Git stores **differences** between versions. It actually stores **snapshots**: each commit records what every file looked like at that moment. (Unchanged files aren't duplicated — Git just points to the same stored copy.)
+Most people think Git stores **differences** between versions. It actually stores **snapshots**: each commit records what every file looked like at that moment. (Unchanged files aren't duplicated, Git just points to the same stored copy.)
 
 Git has a small number of object types, each named by a hash of its contents:
 
 - **Blob:** the contents of one file.
-- **Tree:** a folder — a list of names pointing to blobs and other trees.
+- **Tree:** a folder, a list of names pointing to blobs and other trees.
 - **Commit:** a pointer to the top-level tree, plus author, message and a pointer to the **parent** commit(s).
 
-Because each commit points to its parent, the history forms a chain — and because names are content hashes, changing anything in history changes every hash after it. That's why history can't be silently tampered with.
+Because each commit points to its parent, the history forms a chain, and because names are content hashes, changing anything in history changes every hash after it. That's why history can't be silently tampered with.
 
-::widget Stepper {"type":"flow","cols":4,"title":"What happens when you commit","what":"The journey of your changes from the files you edited to a new commit, and what a branch really is.","steps":["Press Play from left to right.","Notice the staging area between editing and committing.","Find what actually changes when 'the branch moves forward'."],"nodes":[["Working folder","The files you're editing right now."],["git add → staging area","Saves the chosen files' contents as blobs and records them in the 'index' — a draft of your next commit. You can stage some changes and not others."],["git commit","Builds trees from the staging area and creates a commit pointing to that snapshot and to the previous commit."],["The branch moves","The branch (say, main) is just a tiny file containing one commit hash. Committing updates it to point at the new commit. That's all a branch is."]]}
+::widget Stepper {"type":"flow","cols":4,"title":"What happens when you commit","what":"The journey of your changes from the files you edited to a new commit, and what a branch really is.","steps":["Press Play from left to right.","Notice the staging area between editing and committing.","Find what actually changes when 'the branch moves forward'."],"nodes":[["Working folder","The files you're editing right now."],["git add → staging area","Saves the chosen files' contents as blobs and records them in the 'index', a draft of your next commit. You can stage some changes and not others."],["git commit","Builds trees from the staging area and creates a commit pointing to that snapshot and to the previous commit."],["The branch moves","The branch (say, main) is just a tiny file containing one commit hash. Committing updates it to point at the new commit. That's all a branch is."]]}
 
 > [!ANALOGY] A branch is a **bookmark** in a book, not a copy of the book. Creating a branch is instant and free because you're only adding a bookmark. `HEAD` is "the bookmark you're currently reading from".
 
@@ -30,14 +30,14 @@ Because each commit points to its parent, the history forms a chain — and beca
 
 You branched off `main` to build a feature. Meanwhile, teammates added commits to `main`. How do you combine the work?
 
-- **Merge** creates a new commit with **two parents**, joining the two lines of history. Nothing is rewritten; the history shows exactly what happened, including the fork.
-- **Rebase** takes your commits and **replays them on top of** the latest `main`, as if you'd started from there. The history becomes one straight line — but your commits get new hashes, because they're new commits.
+- **Merge** creates a new commit with **two parents** joining the two lines of history. Nothing is rewritten; the history shows exactly what happened, including the fork.
+- **Rebase** takes your commits and **replays them on top of** the latest `main`, as if you'd started from there. The history becomes one straight line, but your commits get new hashes, because they're new commits.
 
-> [!ANALOGY] Two people writing chapters of a book in parallel. **Merging** is stapling both drafts together with a note saying "combined here". **Rebasing** is rewriting your chapters as if you'd started after reading the other person's latest version — tidier, but it's a rewrite.
+> [!ANALOGY] Two people writing chapters of a book in parallel. **Merging** is stapling both drafts together with a note saying "combined here". **Rebasing** is rewriting your chapters as if you'd started after reading the other person's latest version, tidier, but it's a rewrite.
 
 > [!WARN] **Never rebase commits that others have already pulled.** Their copies point to the old commits; yours point to new ones, and the histories diverge in confusing ways. Rebase your own unpublished work freely; merge (or use pull-request squash merges) for shared branches. If you must update a pushed branch you own, use `git push --force-with-lease`, which refuses to overwrite work you haven't seen.
 
-**Conflicts** happen when both sides changed the same lines. Git marks the region in the file, and a human decides the right result — then runs the tests.
+**Conflicts** happen when both sides changed the same lines. Git marks the region in the file, and a human decides the right result, then runs the tests.
 
 ## Undoing mistakes
 
@@ -46,16 +46,16 @@ You branched off `main` to build a feature. Meanwhile, teammates added commits t
 | Throw away uncommitted changes to a file | `git restore file.js` |
 | Unstage a file | `git restore --staged file.js` |
 | Fix the last commit's message or add a forgotten file | `git commit --amend` (only if not pushed) |
-| Undo a pushed commit safely | `git revert <hash>` — adds a new commit that reverses it |
+| Undo a pushed commit safely | `git revert <hash>`, adds a new commit that reverses it |
 | Move the branch back, keeping changes | `git reset --soft HEAD~1` |
-| "I lost a commit!" | `git reflog` — lists everywhere HEAD has been; almost nothing is truly lost |
-| Find which commit introduced a bug | `git bisect` — binary search through history |
+| "I lost a commit!" | `git reflog`, lists everywhere HEAD has been; almost nothing is truly lost |
+| Find which commit introduced a bug | `git bisect`, binary search through history |
 
 > [!EXAMPLE] **git bisect in action.** A test that passed last month fails today, with 300 commits in between. Mark one good commit and one bad, and Git checks out the middle commit for you to test. Each answer halves the range: about 8 tests to find the exact commit among 300 (log₂ 300 ≈ 8). It's binary search (Algorithms track) applied to history.
 
 ## Branching strategies
 
-- **Trunk-based development:** everyone merges small changes into `main` at least daily, using short-lived branches and **feature flags** to hide unfinished work. Used by most high-performing teams (it pairs with CI/CD — Cloud track, chapter 6).
+- **Trunk-based development:** everyone merges small changes into `main` at least daily, using short-lived branches and **feature flags** to hide unfinished work. Used by most high-performing teams (it pairs with CI/CD, Cloud track, chapter 6).
 - **GitHub Flow:** branch off `main`, open a pull request, review, merge, deploy. Simple and common.
 - **Git Flow:** long-lived `develop` and `release` branches. Suited to software released in versions (like mobile apps or libraries), but heavy for web services that deploy continuously.
 
@@ -77,23 +77,23 @@ Fixes BILL-482
 
 A good pull request:
 
-- Is **small** — under a few hundred lines. Review quality drops sharply on large changes.
-- Has a description: what changed, **why**, how it was tested, and screenshots for UI changes.
+- Is **small** under a few hundred lines. Review quality drops sharply on large changes.
+- Has a description: what changed, **why** how it was tested, and screenshots for UI changes.
 - Does **one thing**: don't mix a refactor with a feature.
 
 ## Reviewing code well
 
-Code review catches bugs, but just as importantly it **spreads knowledge**, so more than one person understands every part of the system.
+Code review catches bugs, but just as importantly it **spreads knowledge** so more than one person understands every part of the system.
 
 - **Look for what matters:** correctness, edge cases, security, clarity, tests, and whether the design fits. Let linters and formatters handle style automatically.
 - **Be kind and specific.** Comment on the code, not the person. Ask questions: "What happens if `items` is empty here?" lands better than "This is wrong."
 - **Mark how important a comment is:** "nit:" for small optional suggestions, versus "blocking:" for must-fix issues.
 - **Review promptly.** Waiting days for a review slows everyone down; many teams aim to respond within a few hours.
-- **Approve when it's better than before**, not when it's perfect.
+- **Approve when it's better than before** not when it's perfect.
 
 > [!RECAP]
 > - Git stores **snapshots** as blobs, trees and commits, named by hash; a **branch** is just a pointer to a commit.
-> - **Merge** joins histories; **rebase** replays commits for a straight line — never rebase shared history.
+> - **Merge** joins histories; **rebase** replays commits for a straight line, never rebase shared history.
 > - Recover with `restore`, `revert`, `reset`, **`reflog`**; find bugs with **`bisect`**.
 > - Prefer **trunk-based** development with small, short-lived branches.
 > - Write commit messages that explain **why**; keep pull requests **small**; review kindly, specifically and promptly.

@@ -1,6 +1,6 @@
 ---
 title: Users, Permissions and OS Security
-summary: How an operating system decides who may do what — user and group IDs, file permissions and ACLs from the kernel's view, privilege separation and root, capabilities that split root into pieces, mandatory access control (SELinux, AppArmor), seccomp system-call filtering, sandboxing in browsers and phones, and the hardware-backed defenses against memory attacks.
+summary: How an operating system decides who may do what, user and group IDs, file permissions and ACLs from the kernel's view, privilege separation and root, capabilities that split root into pieces, mandatory access control (SELinux, AppArmor), seccomp system-call filtering, sandboxing in browsers and phones, and the hardware-backed defenses against memory attacks.
 ---
 
 ::widget Scene {"title": "Least privilege: why services shouldn't run as root", "sub": "one bug in a web server, two very different outcomes", "nodes": [{"id": "atk", "kind": "user", "label": "Attacker", "x": 3.72, "y": 3.72, "color": "red"}, {"id": "web", "kind": "server", "label": "Web server", "x": 8.22, "y": -0.78, "color": "blue"}, {"id": "files", "kind": "doc", "label": "Site files", "x": 9.0, "y": -9.0}, {"id": "shadow", "kind": "doc", "label": "/etc/shadow", "x": 12.72, "y": -5.28, "color": "red"}, {"id": "sys", "kind": "cpu", "label": "Whole system", "x": 16.75, "y": -1.25}], "links": [["atk", "web"], ["web", "files"], ["web", "shadow", {"dashed": true}], ["web", "sys", {"dashed": true}]], "metrics": [["user", "Runs as"], ["reach", "Attacker can reach"]], "steps": [{"short": "Bug", "tag": "Setup", "title": "The web server has a remote code execution bug", "body": "<p>Bugs happen. The question is what the attacker gets when one is exploited.</p>", "show": ["atk", "web"], "flow": [["atk", "web", "#ef4444", "exploit"]], "metrics": {"user": ["?"], "reach": ["?"]}}, {"short": "Root", "tag": "As root", "title": "If it runs as root (UID 0)…", "body": "<p>The kernel skips nearly every permission check for root.</p>", "show": ["atk", "web", "files", "shadow", "sys"], "set": {"web": {"badge": "uid 0"}}, "metrics": {"user": ["root", "bad"]}}, {"short": "All", "tag": "As root", "title": "…the attacker owns the machine", "body": "<p>Read password hashes, install a rootkit, load kernel modules, pivot to other servers.</p>", "flow": [["web", "shadow", "#ef4444", "read"], ["web", "sys", "#ef4444", "install backdoor"]], "metrics": {"reach": ["everything", "bad"]}}, {"short": "User", "tag": "Least privilege", "title": "Run it as a dedicated user: www-data", "body": "<p>Starts as root only to bind port 443, then drops privileges (or uses a capability to bind instead).</p>", "set": {"web": {"badge": "uid 33 www-data"}, "shadow": {"dim": true}, "sys": {"dim": true}}, "metrics": {"user": ["www-data", "good"]}}, {"short": "Check", "tag": "Kernel check", "title": "Every file access is checked: owner, group, other", "body": "<p>/etc/shadow is rw------- root. www-data gets \"Permission denied\".</p>", "flow": [["web", "shadow", "#f59e0b", "denied"]], "metrics": {"reach": ["its own files only"]}}, {"short": "Files", "tag": "Ownership", "title": "Site files: readable, not writable", "body": "<p>Owned by a deploy user; www-data can read them but can't deface them.</p>", "flow": [["web", "files", "#22c55e", "read only"]]}, {"short": "Caps", "tag": "Capabilities", "title": "Root split into capabilities", "body": "<p>CAP_NET_BIND_SERVICE lets a non-root process use port 443 without any other root powers.</p>"}, {"short": "Sandbox", "tag": "More layers", "title": "Add sandboxing: seccomp, namespaces, read-only root file system", "body": "<p>systemd can apply these with a few lines (NoNewPrivileges, ProtectSystem=strict).</p>", "set": {"web": {"badge": "sandboxed"}}}, {"short": "Result", "tag": "Outcome", "title": "Same bug, contained", "body": "<p>The attacker gets a limited user in a sandbox instead of the whole machine.</p>", "metrics": {"reach": ["contained", "good"]}, "note": {"kind": "key", "text": "Least privilege: give each process only the permissions it needs, so one bug can't become total compromise."}}]}
@@ -8,7 +8,7 @@ summary: How an operating system decides who may do what — user and group IDs,
 
 ## One bug, whole machine
 
-> [!STORY] For decades, a common server setup ran the web server as **root**, the all-powerful administrator account, because it needed to open port 80 (ports below 1024 required root). When a bug in the web server let attackers run their own code, they didn't just control the website — they controlled **the entire machine**: every file, every user's data, the ability to install hidden backdoors. Modern operating systems are built around a simple lesson from those years: **each program should have only the power it needs**, so one bug can't take over everything.
+> [!STORY] For decades, a common server setup ran the web server as **root** the all-powerful administrator account, because it needed to open port 80 (ports below 1024 required root). When a bug in the web server let attackers run their own code, they didn't just control the website, they controlled **the entire machine**: every file, every user's data, the ability to install hidden backdoors. Modern operating systems are built around a simple lesson from those years: **each program should have only the power it needs** so one bug can't take over everything.
 
 ## Users, groups and IDs
 
@@ -40,7 +40,7 @@ Instead of all-or-nothing root, Linux divides root's powers into about 40 **capa
 |---|---|
 | `CAP_NET_BIND_SERVICE` | Bind to ports below 1024 |
 | `CAP_NET_ADMIN` | Configure network interfaces, firewall rules |
-| `CAP_SYS_ADMIN` | A huge grab-bag of admin operations (mount, and much more) — almost as powerful as root |
+| `CAP_SYS_ADMIN` | A huge grab-bag of admin operations (mount, and much more), almost as powerful as root |
 | `CAP_CHOWN` | Change file ownership |
 | `CAP_SYS_PTRACE` | Debug or inspect other processes |
 | `CAP_KILL` | Send signals to any process |
@@ -55,16 +55,16 @@ Containers use this heavily: Docker drops most capabilities by default, and Kube
 
 ## Mandatory access control: rules even root must follow
 
-Normal permissions are **discretionary**: a file's owner decides who can access it. **Mandatory access control (MAC)** adds system-wide policies that programs — even root processes — can't override.
+Normal permissions are **discretionary**: a file's owner decides who can access it. **Mandatory access control (MAC)** adds system-wide policies that programs, even root processes, can't override.
 
 - **SELinux** (Red Hat, Android): labels every process and file with a type ("httpd_t", "httpd_sys_content_t") and allows only interactions the policy lists. A compromised web server can read web content but not `/home` or `/etc/shadow`, even as root.
-- **AppArmor** (Ubuntu, Debian): path-based profiles per program — "this program may read `/etc/nginx/**`, write `/var/log/nginx/*`, nothing else".
+- **AppArmor** (Ubuntu, Debian): path-based profiles per program, "this program may read `/etc/nginx/**`, write `/var/log/nginx/*`, nothing else".
 
 > [!WARN] When SELinux blocks something, the first instinct is often `setenforce 0` (turn it off). That removes a whole layer of protection. Check the audit log (`ausearch -m avc`), then fix the file label or policy instead.
 
 ## seccomp: limiting system calls
 
-Every interaction with the kernel is a system call (chapter 3). Most programs use only a few dozen of the ~350 available. **seccomp** lets a process install a filter: "from now on, I may only use these system calls" — anything else kills the process or returns an error.
+Every interaction with the kernel is a system call (chapter 3). Most programs use only a few dozen of the ~350 available. **seccomp** lets a process install a filter: "from now on, I may only use these system calls", anything else kills the process or returns an error.
 
 - Docker applies a default seccomp profile blocking around 50 dangerous calls.
 - Chrome's renderer processes and many server sandboxes use strict seccomp filters.
@@ -74,7 +74,7 @@ Every interaction with the kernel is a system call (chapter 3). Most programs us
 
 Modern platforms combine all these layers.
 
-::widget Stepper {"type":"layers","title":"How a browser tab is sandboxed","what":"The layers of protection around a web page in a modern browser like Chrome. Malicious code must break through every layer to reach your files.","steps":["Press Play from the outside in.","For each layer, ask: what would an attacker who broke the layer above still be unable to do?","Notice that the renderer can't open files or network connections itself — it must ask the browser process."],"nodes":[["The browser process","Has your normal user permissions: can read files, use the network, show the UI. Runs no web page code itself."],["Site isolation","Each website runs in its own renderer process, so a malicious site can't read another site's memory (important since Spectre — Architecture track)."],["Renderer sandbox","The process that runs a page's HTML and JavaScript has almost no rights: no file access, no direct network, a strict seccomp filter, its own namespaces. To do anything, it asks the browser process over IPC, which checks the request."],["JavaScript engine","Runs the page's code with memory safety checks; bugs here are what attackers usually exploit first."],["The web page","Untrusted code from the internet. To harm you, an attacker typically needs a bug in the JavaScript engine AND a second bug to escape the sandbox — a 'chain', which is why these exploits are rare and valuable."]]}
+::widget Stepper {"type":"layers","title":"How a browser tab is sandboxed","what":"The layers of protection around a web page in a modern browser like Chrome. Malicious code must break through every layer to reach your files.","steps":["Press Play from the outside in.","For each layer, ask: what would an attacker who broke the layer above still be unable to do?","Notice that the renderer can't open files or network connections itself, it must ask the browser process."],"nodes":[["The browser process","Has your normal user permissions: can read files, use the network, show the UI. Runs no web page code itself."],["Site isolation","Each website runs in its own renderer process, so a malicious site can't read another site's memory (important since Spectre, Architecture track)."],["Renderer sandbox","The process that runs a page's HTML and JavaScript has almost no rights: no file access, no direct network, a strict seccomp filter, its own namespaces. To do anything, it asks the browser process over IPC, which checks the request."],["JavaScript engine","Runs the page's code with memory safety checks; bugs here are what attackers usually exploit first."],["The web page","Untrusted code from the internet. To harm you, an attacker typically needs a bug in the JavaScript engine AND a second bug to escape the sandbox, a 'chain', which is why these exploits are rare and valuable."]]}
 
 Phones go further: **every app** is its own user ID (Android) or sandbox container (iOS), can only see its own files, and must ask the user for permissions like camera, location and contacts.
 
@@ -86,7 +86,7 @@ Many attacks exploit memory bugs in C and C++ code (Architecture track, chapter 
 - **ASLR:** program, library, stack and heap addresses are randomized on every run, so attackers can't predict where to jump.
 - **Stack canaries:** a secret value before the return address; if a buffer overflow changes it, the program aborts.
 - **Control-flow integrity, shadow stacks** (Intel CET) and **pointer authentication** (ARM PAC): the hardware checks that returns and indirect jumps go where they should.
-- **Memory tagging** (ARM MTE): each memory allocation gets a tag, and pointers must carry the matching tag — catching use-after-free and overflow bugs.
+- **Memory tagging** (ARM MTE): each memory allocation gets a tag, and pointers must carry the matching tag, catching use-after-free and overflow bugs.
 - **Memory-safe languages** (Rust, Go, Java, Swift) remove whole classes of these bugs; Android, Windows and Linux are adding Rust code for exactly this reason.
 
 > [!RECAP]

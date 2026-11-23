@@ -1,9 +1,9 @@
 ---
 title: Randomized Algorithms and Hashing Tricks
-summary: Using randomness on purpose — why random pivots make quicksort reliably fast, quickselect for the k-th largest element, Las Vegas vs Monte Carlo algorithms, shuffling correctly, reservoir sampling from an endless stream, randomized load balancing ("the power of two choices"), rolling hashes, and consistent hashing. Plus why randomness protects systems from attackers.
+summary: Using randomness on purpose, why random pivots make quicksort reliably fast, quickselect for the k-th largest element, Las Vegas vs Monte Carlo algorithms, shuffling correctly, reservoir sampling from an endless stream, randomized load balancing ("the power of two choices"), rolling hashes, and consistent hashing. Plus why randomness protects systems from attackers.
 ---
 
-::widget Scene {"title": "Quickselect: the k-th largest without sorting", "sub": "2nd largest of [3, 2, 1, 5, 6, 4] — partition once, recurse on one side", "nodes": [{"id": "a", "kind": "cells", "label": "array (target index 4 in sorted order)", "x": 3.1, "y": 3.1, "values": [3, 2, 1, 5, 6, 4]}], "metrics": [["range", "Search range"], ["pivot", "Pivot lands at"], ["ans", "Answer"]], "steps": [{"short": "Goal", "tag": "Goal", "title": "2nd largest = the element at index n − k = 4 in sorted order", "body": "<p>Sorting costs O(n log n). We only need one position.</p>", "set": {"a": {"marks": {}, "ptr": {}}}, "metrics": {"range": ["0–5"], "pivot": ["—"], "ans": ["—"]}}, {"short": "P1", "tag": "Partition", "title": "Partition around pivot 4 (random pick)", "body": "<p>Smaller values left: [3, 2, 1, 4, 6, 5]. Pivot 4 lands at index 3 — its final sorted position.</p>", "set": {"a": {"marks": {"3": "purple", "0": "blue", "1": "blue", "2": "blue", "4": "orange", "5": "orange"}, "ptr": {"pivot": 3}, "values": [3, 2, 1, 4, 6, 5]}}, "metrics": {"pivot": ["3"]}}, {"short": "Side", "tag": "Choose side", "title": "3 < 4: the answer is to the right", "body": "<p>Throw away the whole left part. Unlike quick sort, we recurse on only one side.</p>", "set": {"a": {"marks": {"0": "dark", "1": "dark", "2": "dark", "3": "dark", "4": "orange", "5": "orange"}, "ptr": {}, "values": [3, 2, 1, 4, 6, 5]}}, "metrics": {"range": ["4–5"]}}, {"short": "P2", "tag": "Partition", "title": "Partition [6, 5] around pivot 5", "body": "<p>→ [5, 6]; pivot lands at index 4.</p>", "set": {"a": {"marks": {"0": "dark", "1": "dark", "2": "dark", "3": "dark", "4": "purple", "5": "orange"}, "ptr": {"pivot": 4}, "values": [3, 2, 1, 4, 5, 6]}}, "metrics": {"pivot": ["4"]}}, {"short": "Hit", "tag": "Found", "title": "Pivot index equals the target: answer 5", "body": "<p>Done without sorting the rest.</p>", "set": {"a": {"marks": {"4": "green"}, "ptr": {}, "values": [3, 2, 1, 4, 5, 6]}}, "metrics": {"ans": ["5", "good"]}}, {"short": "Avg", "tag": "Complexity", "title": "Average O(n): n + n/2 + n/4 + … ≈ 2n", "body": "<p>Each round shrinks the range by about half.</p>"}, {"short": "Rand", "tag": "Randomness", "title": "Why random pivots?", "body": "<p>A fixed pivot can be attacked with crafted input to force O(n²). Random pivots make bad luck astronomically unlikely for any input.</p>"}, {"short": "Alt", "tag": "Alternatives", "title": "Alternatives", "body": "<p>A min-heap of size k gives O(n log k) and works on streams. Median-of-medians guarantees O(n) but is slower in practice.</p>", "note": {"kind": "key", "text": "Quickselect = quick sort's partition, recursing only into the side containing the target index. Expected linear time with random pivots."}}]}
+::widget Scene {"title": "Quickselect: the k-th largest without sorting", "sub": "2nd largest of [3, 2, 1, 5, 6, 4], partition once, recurse on one side", "nodes": [{"id": "a", "kind": "cells", "label": "array (target index 4 in sorted order)", "x": 3.1, "y": 3.1, "values": [3, 2, 1, 5, 6, 4]}], "metrics": [["range", "Search range"], ["pivot", "Pivot lands at"], ["ans", "Answer"]], "steps": [{"short": "Goal", "tag": "Goal", "title": "2nd largest = the element at index n − k = 4 in sorted order", "body": "<p>Sorting costs O(n log n). We only need one position.</p>", "set": {"a": {"marks": {}, "ptr": {}}}, "metrics": {"range": ["0–5"], "pivot": ["-"], "ans": ["-"]}}, {"short": "P1", "tag": "Partition", "title": "Partition around pivot 4 (random pick)", "body": "<p>Smaller values left: [3, 2, 1, 4, 6, 5]. Pivot 4 lands at index 3, its final sorted position.</p>", "set": {"a": {"marks": {"3": "purple", "0": "blue", "1": "blue", "2": "blue", "4": "orange", "5": "orange"}, "ptr": {"pivot": 3}, "values": [3, 2, 1, 4, 6, 5]}}, "metrics": {"pivot": ["3"]}}, {"short": "Side", "tag": "Choose side", "title": "3 < 4: the answer is to the right", "body": "<p>Throw away the whole left part. Unlike quick sort, we recurse on only one side.</p>", "set": {"a": {"marks": {"0": "dark", "1": "dark", "2": "dark", "3": "dark", "4": "orange", "5": "orange"}, "ptr": {}, "values": [3, 2, 1, 4, 6, 5]}}, "metrics": {"range": ["4–5"]}}, {"short": "P2", "tag": "Partition", "title": "Partition [6, 5] around pivot 5", "body": "<p>→ [5, 6]; pivot lands at index 4.</p>", "set": {"a": {"marks": {"0": "dark", "1": "dark", "2": "dark", "3": "dark", "4": "purple", "5": "orange"}, "ptr": {"pivot": 4}, "values": [3, 2, 1, 4, 5, 6]}}, "metrics": {"pivot": ["4"]}}, {"short": "Hit", "tag": "Found", "title": "Pivot index equals the target: answer 5", "body": "<p>Done without sorting the rest.</p>", "set": {"a": {"marks": {"4": "green"}, "ptr": {}, "values": [3, 2, 1, 4, 5, 6]}}, "metrics": {"ans": ["5", "good"]}}, {"short": "Avg", "tag": "Complexity", "title": "Average O(n): n + n/2 + n/4 + … ≈ 2n", "body": "<p>Each round shrinks the range by about half.</p>"}, {"short": "Rand", "tag": "Randomness", "title": "Why random pivots?", "body": "<p>A fixed pivot can be attacked with crafted input to force O(n²). Random pivots make bad luck astronomically unlikely for any input.</p>"}, {"short": "Alt", "tag": "Alternatives", "title": "Alternatives", "body": "<p>A min-heap of size k gives O(n log k) and works on streams. Median-of-medians guarantees O(n) but is slower in practice.</p>", "note": {"kind": "key", "text": "Quickselect = quick sort's partition, recursing only into the side containing the target index. Expected linear time with random pivots."}}]}
 
 
 
@@ -11,18 +11,18 @@ summary: Using randomness on purpose — why random pivots make quicksort reliab
 
 > [!STORY] In 2011, researchers showed they could freeze web servers written in PHP, Java, Python and Ruby with a single crafted HTTP request. They sent form fields whose names were chosen so that every one landed in the **same hash-table bucket**. A lookup that should take O(1) became O(n), and parsing one 2 MB request took the server a full minute of CPU. The fix, adopted by nearly every language: **randomize the hash function** each time the program starts, so attackers can't predict collisions. Randomness, used deliberately, turned a predictable weakness into something no attacker could plan for.
 
-A **randomized algorithm** makes random choices as it runs. That sounds unreliable, but it often makes algorithms **simpler, faster on average, and immune to worst-case inputs** — because no fixed input can be bad for every random choice.
+A **randomized algorithm** makes random choices as it runs. That sounds unreliable, but it often makes algorithms **simpler, faster on average, and immune to worst-case inputs** because no fixed input can be bad for every random choice.
 
 ## Two kinds of randomized algorithm
 
 - **Las Vegas:** always gives the **correct** answer; only the running **time** is random. Randomized quicksort is always correct; it's just very likely to be fast.
-- **Monte Carlo:** runs in fixed time; the **answer** might be wrong with a small, controllable probability. Primality tests like Miller-Rabin: "probably prime" with error below 4⁻ᵏ after k rounds — repeat 40 times and you're more likely to be hit by a meteor than get a wrong answer.
+- **Monte Carlo:** runs in fixed time; the **answer** might be wrong with a small, controllable probability. Primality tests like Miller-Rabin: "probably prime" with error below 4⁻ᵏ after k rounds, repeat 40 times and you're more likely to be hit by a meteor than get a wrong answer.
 
-> [!ANALOGY] A Las Vegas algorithm is a guaranteed delivery service that's usually on time but occasionally slow. A Monte Carlo algorithm always arrives on time but, very rarely, delivers to the wrong door — and you can make that rarer by sending extra couriers to double-check.
+> [!ANALOGY] A Las Vegas algorithm is a guaranteed delivery service that's usually on time but occasionally slow. A Monte Carlo algorithm always arrives on time but, very rarely, delivers to the wrong door, and you can make that rarer by sending extra couriers to double-check.
 
 ## Random pivots: quicksort and quickselect
 
-Quicksort picks a **pivot**, partitions the array into smaller and larger elements, and recurses (chapter 3). With a fixed pivot choice (say, always the first element), an already-sorted input makes every partition lopsided: O(n²). A **random pivot** makes that vanishingly unlikely for **any** input — expected O(n log n).
+Quicksort picks a **pivot** partitions the array into smaller and larger elements, and recurses (chapter 3). With a fixed pivot choice (say, always the first element), an already-sorted input makes every partition lopsided: O(n²). A **random pivot** makes that vanishingly unlikely for **any** input, expected O(n log n).
 
 The same idea finds the **k-th largest element** without fully sorting: **quickselect**.
 
@@ -47,7 +47,7 @@ def kth_largest(nums, k):
             lo = lo + len(less) + len(equal)
 ```
 
-Each round throws away a large fraction of the remaining elements on average, so expected time is **O(n)** — faster than sorting (O(n log n)) or a heap (O(n log k)) for one-off queries. Databases and analytics engines use selection algorithms to compute medians and percentiles.
+Each round throws away a large fraction of the remaining elements on average, so expected time is **O(n)** faster than sorting (O(n log n)) or a heap (O(n log k)) for one-off queries. Databases and analytics engines use selection algorithms to compute medians and percentiles.
 
 ## Shuffling correctly
 
@@ -60,11 +60,11 @@ def shuffle(a):
         a[i], a[j] = a[j], a[i]
 ```
 
-> [!WARN] A common bug: `j = random.randint(0, len(a) - 1)` on every step (picking from the **whole** array). It looks random but some orderings come out more often than others — a real problem for card games, A/B test assignment and lotteries. Use your language's built-in shuffle, which implements Fisher-Yates.
+> [!WARN] A common bug: `j = random.randint(0, len(a) - 1)` on every step (picking from the **whole** array). It looks random but some orderings come out more often than others, a real problem for card games, A/B test assignment and lotteries. Use your language's built-in shuffle, which implements Fisher-Yates.
 
 ## Reservoir sampling: a fair sample from an endless stream
 
-You're reading an unbounded stream — log lines, tweets, network packets — and want to keep a **uniformly random sample of k items** at all times, without storing everything or knowing the total in advance.
+You're reading an unbounded stream, log lines, tweets, network packets, and want to keep a **uniformly random sample of k items** at all times, without storing everything or knowing the total in advance.
 
 ```python
 def reservoir_sample(stream, k):
@@ -86,12 +86,12 @@ At every moment, each item seen so far has an equal chance (k / items seen) of b
 You have N servers and want to spread requests evenly.
 
 - **Pure random:** pick any server. Simple, but some servers end up noticeably busier than others by chance.
-- **Least loaded:** check all N and pick the least busy — accurate but needs global knowledge, and many balancers acting on the same stale information all pile onto the same server ("herding").
+- **Least loaded:** check all N and pick the least busy, accurate but needs global knowledge, and many balancers acting on the same stale information all pile onto the same server ("herding").
 - **Power of two choices:** pick **two** servers at random and send the request to the less loaded of the two.
 
-That tiny change has a dramatic effect: the maximum load imbalance drops from roughly log n / log log n to log log n — **exponentially better**, with almost no coordination. nginx (`random two least_conn`), Envoy, HAProxy and many internal schedulers use it.
+That tiny change has a dramatic effect: the maximum load imbalance drops from roughly log n / log log n to log log n, **exponentially better** with almost no coordination. nginx (`random two least_conn`), Envoy, HAProxy and many internal schedulers use it.
 
-> [!ANALOGY] At a supermarket, glancing at just two random checkout queues and joining the shorter one gives almost all the benefit of surveying every queue — without walking the whole store, and without everyone rushing to the same "shortest" queue at once.
+> [!ANALOGY] At a supermarket, glancing at just two random checkout queues and joining the shorter one gives almost all the benefit of surveying every queue, without walking the whole store, and without everyone rushing to the same "shortest" queue at once.
 
 ## Hashing tricks
 
@@ -101,11 +101,11 @@ As in the story: hash tables in Python, Ruby, Rust, Go and Java's HashMap (with 
 
 ### Rolling hashes (Rabin-Karp)
 
-To find a pattern in text, compute a hash of each window of text. A **rolling hash** updates the previous window's hash in O(1) by removing the leftmost character and adding the new one — so all windows are hashed in O(n) total, and only windows with matching hashes are compared character by character (chapter 7). Used for plagiarism detection, finding duplicate code, and in **rsync** and backup tools to find changed blocks between two versions of a file.
+To find a pattern in text, compute a hash of each window of text. A **rolling hash** updates the previous window's hash in O(1) by removing the leftmost character and adding the new one, so all windows are hashed in O(n) total, and only windows with matching hashes are compared character by character (chapter 7). Used for plagiarism detection, finding duplicate code, and in **rsync** and backup tools to find changed blocks between two versions of a file.
 
 ### Consistent hashing
 
-With `server = hash(key) mod N`, adding one server changes **almost every** key's server — catastrophic for caches. **Consistent hashing** places servers and keys on a ring; each key belongs to the next server clockwise. Adding or removing a server only moves the keys near it (~1/N of them). Random **virtual nodes** spread load evenly. Used by DynamoDB, Cassandra, CDNs and distributed caches (System Design track — try the hash-ring figure there).
+With `server = hash(key) mod N`, adding one server changes **almost every** key's server, catastrophic for caches. **Consistent hashing** places servers and keys on a ring; each key belongs to the next server clockwise. Adding or removing a server only moves the keys near it (~1/N of them). Random **virtual nodes** spread load evenly. Used by DynamoDB, Cassandra, CDNs and distributed caches (System Design track, try the hash-ring figure there).
 
 ## Randomness as a design tool in systems
 
@@ -115,7 +115,7 @@ With `server = hash(key) mod N`, adding one server changes **almost every** key'
 - **Skip lists** (used by Redis sorted sets) use coin flips to decide node heights, giving balanced-tree performance without complex rebalancing.
 - **Treaps** and **randomized BSTs** stay balanced in expectation.
 
-> [!NOTE] **Pseudorandom vs cryptographically secure.** `Math.random()` and `random.random()` are fast but predictable if an attacker sees some outputs. For tokens, passwords, session IDs and keys, use a **cryptographically secure** generator (`secrets` in Python, `crypto.getRandomValues`/`crypto.randomUUID` in JavaScript) — Security track, chapter 2.
+> [!NOTE] **Pseudorandom vs cryptographically secure.** `Math.random()` and `random.random()` are fast but predictable if an attacker sees some outputs. For tokens, passwords, session IDs and keys, use a **cryptographically secure** generator (`secrets` in Python, `crypto.getRandomValues`/`crypto.randomUUID` in JavaScript), Security track, chapter 2.
 
 > [!RECAP]
 > - **Las Vegas** algorithms are always correct with random running time; **Monte Carlo** algorithms have fixed time and a tiny, tunable error.

@@ -1,20 +1,20 @@
 ---
-title: Testing — Changing Code Without Fear
+title: Testing: Changing Code Without Fear
 summary: Why tests are what let teams move fast, the test pyramid from unit to end-to-end, writing tests that are clear and trustworthy, when to use mocks and fakes, test-driven development, flaky tests, and testing techniques beyond examples like property-based testing.
 ---
 
-::widget Scene {"title": "The test pyramid", "sub": "test a checkout discount at every level — and fix a flaky test", "nodes": [{"id": "u", "kind": "blocks", "label": "Unit tests (thousands)", "x": 3.72, "y": 3.72, "count": 25, "color": "green"}, {"id": "i", "kind": "blocks", "label": "Integration (hundreds)", "x": 8.72, "y": -1.28, "count": 9, "color": "blue"}, {"id": "e", "kind": "blocks", "label": "End-to-end (a few)", "x": 13.72, "y": -6.28, "count": 2, "color": "purple"}], "metrics": [["level", "Level"], ["speed", "Runs in"], ["finds", "Catches"]], "steps": [{"short": "Feature", "tag": "Feature", "title": "New rule: 10% off orders over ₹2,000 for members", "body": "<p>Where should its tests live?</p>", "show": ["u", "i", "e"], "metrics": {"level": ["—"], "speed": ["—"], "finds": ["—"]}}, {"short": "Unit", "tag": "Unit", "title": "Unit tests on the pure pricing function", "body": "<p>₹1,999 → no discount; ₹2,000 → discount; non-member → none; rounding to paise. Milliseconds each.</p>", "focus": ["u"], "metrics": {"level": ["unit"], "speed": ["ms"], "finds": ["logic and edge cases"]}}, {"short": "Bound", "tag": "Boundaries", "title": "Test the boundaries, not just a typical value", "body": "<p>Off-by-one (> vs ≥) is the most common bug in rules like this.</p>", "set": {"u": {"badge": "1999 / 2000 / 2001"}}}, {"short": "Int", "tag": "Integration", "title": "Integration test with a real database", "body": "<p>Does the order service read the membership flag and persist the discounted total? Catches SQL and wiring mistakes mocks would hide.</p>", "focus": ["i"], "metrics": {"level": ["integration"], "speed": ["seconds"], "finds": ["wiring, queries, config"]}}, {"short": "E2E", "tag": "End-to-end", "title": "One end-to-end test of the whole checkout", "body": "<p>Browser → API → payment sandbox. Slow and brittle, so only for critical journeys.</p>", "focus": ["e"], "metrics": {"level": ["E2E"], "speed": ["minutes"], "finds": ["the system actually works"]}}, {"short": "Flaky", "tag": "Flaky", "title": "The E2E test fails 1 run in 20", "body": "<p>It waits a fixed 2 s for a confirmation that sometimes takes 2.5 s.</p>", "set": {"e": {"badge": "flaky"}}, "metrics": {"finds": ["team stops trusting CI", "bad"]}}, {"short": "Fix", "tag": "Fix", "title": "Wait for the condition, not for time", "body": "<p>Poll until the confirmation appears (with a timeout). Quarantine flaky tests immediately and fix them.</p>", "set": {"e": {"badge": "stable"}}, "metrics": {"finds": ["trusted again", "good"]}}, {"short": "Bug", "tag": "Regression", "title": "A production bug? Write a failing test first, then fix", "body": "<p>It can never silently return.</p>"}, {"short": "Shape", "tag": "Shape", "title": "Many fast tests at the bottom, few slow ones on top", "body": "<p>Coverage numbers are a hint, not a goal — test behaviour, not implementation details.</p>", "note": {"kind": "key", "text": "Unit tests for logic and boundaries, integration tests for wiring with real dependencies, a few E2E tests for critical paths. Kill flakiness fast."}}]}
+::widget Scene {"title": "The test pyramid", "sub": "test a checkout discount at every level, and fix a flaky test", "nodes": [{"id": "u", "kind": "blocks", "label": "Unit tests (thousands)", "x": 3.72, "y": 3.72, "count": 25, "color": "green"}, {"id": "i", "kind": "blocks", "label": "Integration (hundreds)", "x": 8.72, "y": -1.28, "count": 9, "color": "blue"}, {"id": "e", "kind": "blocks", "label": "End-to-end (a few)", "x": 13.72, "y": -6.28, "count": 2, "color": "purple"}], "metrics": [["level", "Level"], ["speed", "Runs in"], ["finds", "Catches"]], "steps": [{"short": "Feature", "tag": "Feature", "title": "New rule: 10% off orders over ₹2,000 for members", "body": "<p>Where should its tests live?</p>", "show": ["u", "i", "e"], "metrics": {"level": ["-"], "speed": ["-"], "finds": ["-"]}}, {"short": "Unit", "tag": "Unit", "title": "Unit tests on the pure pricing function", "body": "<p>₹1,999 → no discount; ₹2,000 → discount; non-member → none; rounding to paise. Milliseconds each.</p>", "focus": ["u"], "metrics": {"level": ["unit"], "speed": ["ms"], "finds": ["logic and edge cases"]}}, {"short": "Bound", "tag": "Boundaries", "title": "Test the boundaries, not just a typical value", "body": "<p>Off-by-one (> vs ≥) is the most common bug in rules like this.</p>", "set": {"u": {"badge": "1999 / 2000 / 2001"}}}, {"short": "Int", "tag": "Integration", "title": "Integration test with a real database", "body": "<p>Does the order service read the membership flag and persist the discounted total? Catches SQL and wiring mistakes mocks would hide.</p>", "focus": ["i"], "metrics": {"level": ["integration"], "speed": ["seconds"], "finds": ["wiring, queries, config"]}}, {"short": "E2E", "tag": "End-to-end", "title": "One end-to-end test of the whole checkout", "body": "<p>Browser → API → payment sandbox. Slow and brittle, so only for critical journeys.</p>", "focus": ["e"], "metrics": {"level": ["E2E"], "speed": ["minutes"], "finds": ["the system actually works"]}}, {"short": "Flaky", "tag": "Flaky", "title": "The E2E test fails 1 run in 20", "body": "<p>It waits a fixed 2 s for a confirmation that sometimes takes 2.5 s.</p>", "set": {"e": {"badge": "flaky"}}, "metrics": {"finds": ["team stops trusting CI", "bad"]}}, {"short": "Fix", "tag": "Fix", "title": "Wait for the condition, not for time", "body": "<p>Poll until the confirmation appears (with a timeout). Quarantine flaky tests immediately and fix them.</p>", "set": {"e": {"badge": "stable"}}, "metrics": {"finds": ["trusted again", "good"]}}, {"short": "Bug", "tag": "Regression", "title": "A production bug? Write a failing test first, then fix", "body": "<p>It can never silently return.</p>"}, {"short": "Shape", "tag": "Shape", "title": "Many fast tests at the bottom, few slow ones on top", "body": "<p>Coverage numbers are a hint, not a goal, test behaviour, not implementation details.</p>", "note": {"kind": "key", "text": "Unit tests for logic and boundaries, integration tests for wiring with real dependencies, a few E2E tests for critical paths. Kill flakiness fast."}}]}
 
 
 ## The Friday deploy
 
-> [!STORY] Two teams each need to upgrade a library used everywhere in their code. Team A has no automated tests. They change it, click around the app for an hour, deploy nervously, and spend the weekend fixing three things customers found. Team B has 4,000 tests that run in six minutes. They change it, see 11 failures, fix them, see green, and deploy before lunch. Team B isn't more careful — they have a **safety net**.
+> [!STORY] Two teams each need to upgrade a library used everywhere in their code. Team A has no automated tests. They change it, click around the app for an hour, deploy nervously, and spend the weekend fixing three things customers found. Team B has 4,000 tests that run in six minutes. They change it, see 11 failures, fix them, see green, and deploy before lunch. Team B isn't more careful, they have a **safety net**.
 
 Tests aren't mainly about catching bugs today. They're what let you **change code tomorrow** with confidence: refactor, upgrade, add features, and know immediately if you broke something.
 
 ## The test pyramid
 
-::widget Stepper {"type":"layers","title":"The test pyramid: many fast tests at the bottom, a few slow ones at the top","what":"The four main kinds of tests, from the slowest and fewest at the top to the fastest and most numerous at the bottom.","steps":["Press Play from the top down.","For each layer, ask: how fast is it, and what kind of bug does it catch?","Decide where a test for 'a 10% discount is applied to orders over ₹1,000' belongs."],"nodes":[["End-to-end tests (few)","Drive the real app through its UI or public API, like a user would (Playwright, Cypress). The most realistic, but slow and fragile. Keep them for critical journeys: sign up, log in, checkout."],["Contract tests","Check that a service still provides what each of its consumers expects, so separate teams' services can be deployed independently (Pact)."],["Integration tests","Run your code with real dependencies — a real database, a real message queue — often in throwaway containers (Testcontainers). Catch wrong SQL, configuration and wiring mistakes."],["Unit tests (many)","Test one function or class on its own, in milliseconds. Business rules like pricing, parsing and validation belong here — thousands of them can run on every save."]]}
+::widget Stepper {"type":"layers","title":"The test pyramid: many fast tests at the bottom, a few slow ones at the top","what":"The four main kinds of tests, from the slowest and fewest at the top to the fastest and most numerous at the bottom.","steps":["Press Play from the top down.","For each layer, ask: how fast is it, and what kind of bug does it catch?","Decide where a test for 'a 10% discount is applied to orders over ₹1,000' belongs."],"nodes":[["End-to-end tests (few)","Drive the real app through its UI or public API, like a user would (Playwright, Cypress). The most realistic, but slow and fragile. Keep them for critical journeys: sign up, log in, checkout."],["Contract tests","Check that a service still provides what each of its consumers expects, so separate teams' services can be deployed independently (Pact)."],["Integration tests","Run your code with real dependencies, a real database, a real message queue, often in throwaway containers (Testcontainers). Catch wrong SQL, configuration and wiring mistakes."],["Unit tests (many)","Test one function or class on its own, in milliseconds. Business rules like pricing, parsing and validation belong here, thousands of them can run on every save."]]}
 
 > [!NOTE] Some teams prefer a "testing trophy" with more integration tests, because modern tools make them fast and they catch more real bugs. The principle is the same: lots of fast tests, a few realistic slow ones, and each test at the lowest level that can catch the bug.
 
@@ -42,8 +42,8 @@ test('does not discount orders of exactly ₹1,000', () => {
 
 Qualities of good tests:
 
-- **The name describes the behavior**, so a failure tells you what broke.
-- **Test behavior, not implementation.** Check the output, not which private methods were called — otherwise every refactor breaks the tests.
+- **The name describes the behavior** so a failure tells you what broke.
+- **Test behavior, not implementation.** Check the output, not which private methods were called, otherwise every refactor breaks the tests.
 - **One reason to fail** per test.
 - **Fast and independent:** tests shouldn't depend on each other's order or leftover data.
 - **Cover the edges:** empty lists, zero, negative numbers, exactly-on-the-boundary values, very large inputs, unicode, time zones.
@@ -54,11 +54,11 @@ Sometimes the code under test talks to something slow, expensive or unpredictabl
 
 - **Stub:** returns canned answers ("the payment API always says approved").
 - **Mock:** also records how it was called, so you can check ("was `sendEmail` called once with this address?").
-- **Fake:** a simple working implementation — an in-memory database instead of a real one.
+- **Fake:** a simple working implementation, an in-memory database instead of a real one.
 
 > [!ANALOGY] A flight simulator. Pilots practise engine failures without crashing real planes. Test doubles let you practise "the payment provider times out" without a real outage.
 
-> [!WARN] **Over-mocking** is a common trap. If a test mocks everything, it only proves your code calls the mocks the way you told it to — it can pass while the real system is broken. Mock at the edges of your system (external APIs, the clock), and use real objects inside.
+> [!WARN] **Over-mocking** is a common trap. If a test mocks everything, it only proves your code calls the mocks the way you told it to, it can pass while the real system is broken. Mock at the edges of your system (external APIs, the clock), and use real objects inside.
 
 ## Test-driven development (TDD)
 
@@ -68,7 +68,7 @@ Sometimes the code under test talks to something slow, expensive or unpredictabl
 2. **Green:** write the simplest code that makes it pass.
 3. **Refactor:** clean up, with the tests keeping you safe.
 
-Benefits: you only write code you need, the design becomes easier to test (and usually simpler), and you end up with tests for everything. It works especially well for logic with clear rules. Not every team uses strict TDD, but writing a failing test **before fixing a bug** is good practice everywhere — it proves the bug exists and that your fix works.
+Benefits: you only write code you need, the design becomes easier to test (and usually simpler), and you end up with tests for everything. It works especially well for logic with clear rules. Not every team uses strict TDD, but writing a failing test **before fixing a bug** is good practice everywhere, it proves the bug exists and that your fix works.
 
 ## Flaky tests
 
@@ -78,9 +78,9 @@ They're poison: once people learn that failures are "probably just flaky", they 
 
 ## Beyond examples
 
-- **Property-based testing:** instead of a few hand-picked examples, state a rule that should always hold — "sorting a list keeps its length and gives ascending order" — and let a tool generate hundreds of random inputs, including nasty ones you'd never think of (Hypothesis, fast-check).
+- **Property-based testing:** instead of a few hand-picked examples, state a rule that should always hold, "sorting a list keeps its length and gives ascending order", and let a tool generate hundreds of random inputs, including nasty ones you'd never think of (Hypothesis, fast-check).
 - **Snapshot tests:** save the output (e.g. rendered UI) and alert on any change. Handy, but easy to blindly update.
-- **Mutation testing:** deliberately introduce small bugs into your code and see if the tests catch them — a measure of how good your tests really are.
+- **Mutation testing:** deliberately introduce small bugs into your code and see if the tests catch them, a measure of how good your tests really are.
 - **Load and chaos testing:** how does the system behave under 10× traffic, or when a dependency dies?
 
 > [!NOTE] **Code coverage** shows which lines ran during tests. Low coverage reveals untested areas, but high coverage doesn't prove the tests check anything meaningful. Treat it as a flashlight, not a goal.
@@ -88,7 +88,7 @@ They're poison: once people learn that failures are "probably just flaky", they 
 > [!RECAP]
 > - Tests are the **safety net** that lets you change code confidently.
 > - The **pyramid**: many fast unit tests, some integration and contract tests, a few end-to-end tests.
-> - Good tests describe behavior, use **Arrange-Act-Assert**, test behavior not implementation, and cover edge cases.
+> - Good tests describe behavior, use **Arrange-Act-Assert** test behavior not implementation, and cover edge cases.
 > - Use **test doubles** at the edges; avoid over-mocking.
 > - **TDD**: red → green → refactor; always write a failing test before fixing a bug.
 > - Fix **flaky** tests fast; consider **property-based** and mutation testing.

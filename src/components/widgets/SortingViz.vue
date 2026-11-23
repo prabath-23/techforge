@@ -29,7 +29,7 @@ make(); onUnmounted(() => clearInterval(timer))
 <template>
   <div>
     <div class="w-title">Sorting visualizer</div>
-    <p class="w-sub">Try the same algorithm on random vs nearly-sorted vs reversed input — that's where the real differences show up.</p>
+    <p class="w-sub">Try the same algorithm on random vs nearly-sorted vs reversed input, that's where the real differences show up.</p>
     <div class="w-row">
       <select v-model="algo"><option v-for="(l, k) in ALGOS" :key="k" :value="k">{{ l }}</option></select>
       <select v-model="pattern" @change="make"><option value="random">Random</option><option value="nearly">Nearly sorted</option><option value="reversed">Reversed</option></select>

@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { getTrack } from '../lib/content.js'
+import { getTrack, fmtTime } from '../lib/content.js'
 import { state } from '../lib/progress.js'
 import Icon from '../components/Icon.vue'
 const route = useRoute()
@@ -19,7 +19,7 @@ const next = computed(() => t.value.chapters.find(c => !state.done[`${t.value.id
       <p class="lede">{{ t.blurb }}</p>
       <div class="track-stats">
         <span><b>{{ t.chapters.length }}</b> chapters</span>
-        <span><b>~{{ Math.round(minutes / 6) / 10 }} h</b> reading</span>
+        <span><b>{{ fmtTime(minutes) }}</b> total study time</span>
         <span><b>{{ done }}</b> completed</span>
         <span v-if="t.planned?.length"><b>{{ t.planned.length }}</b> planned</span>
       </div>
@@ -33,7 +33,7 @@ const next = computed(() => t.value.chapters.find(c => !state.done[`${t.value.id
           <span class="chap-n" :class="{ done: state.done[`${t.id}/${c.slug}`] }">
             <Icon v-if="state.done[`${t.id}/${c.slug}`]" name="check" :size="18" :stroke="3" /><template v-else>{{ i + 1 }}</template>
           </span>
-          <div><h3>{{ c.title }}</h3><p>{{ c.summary }}</p><small><Icon name="clock" :size="12" /> {{ c.minutes }} min read</small></div>
+          <div><h3>{{ c.title }}</h3><p>{{ c.summary }}</p><small><Icon name="clock" :size="12" /> {{ fmtTime(c.minutes) }} · {{ c.lessons.reduce((n, l) => n + l.steps, 0) }} lesson steps</small></div>
         </router-link>
       </li>
     </ol>

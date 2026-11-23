@@ -89,7 +89,7 @@ const uid = Math.random().toString(36).slice(2)
     </div>
     <div class="w-row" style="gap:12px">
       <span v-for="k in usedKinds" :key="k" class="meta" style="display:inline-flex;align-items:center;gap:5px"><i :style="{ width: '10px', height: '10px', borderRadius: '3px', background: KIND[k]?.[1], display: 'inline-block' }"></i>{{ KIND[k]?.[0] }}</span>
-      <span class="meta">— solid arrow: synchronous request · dashed: asynchronous</span>
+      <span class="meta">solid arrow: synchronous request · dashed: asynchronous</span>
     </div>
     <div class="w-out w-explain">
       <template v-if="active"><span class="step-count">{{ flowName }} · step {{ step + 1 }} of {{ flow.length }}</span><div style="margin-top:6px" v-html="active[2]"></div></template>

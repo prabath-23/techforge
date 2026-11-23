@@ -156,7 +156,7 @@ const noteLabel = { notice: 'Notice', key: 'Key idea', good: 'Good to know', war
   <div ref="root" class="scene" :class="{ focus: visible, lesson, compact }">
     <div class="sc-main">
       <div v-if="lesson && head" class="ls-head">
-        <div class="ls-kicker"><span>Interactive lesson<template v-if="head.of > 1"> {{ head.n }} of {{ head.of }}</template></span><i></i><span>{{ steps.length }} steps</span><template v-if="head.done"><i></i><span class="ls-ok">✓ Completed</span></template></div>
+        <div class="ls-kicker"><span>{{ head.of > 1 ? `Interactive lesson ${head.n} of ${head.of}` : 'Interactive lesson' }}</span><i></i><span>{{ steps.length }} steps</span><template v-if="head.done"><i></i><span class="ls-ok">✓ Completed</span></template></div>
         <h2>{{ head.title }}</h2>
         <p v-if="sub" class="ls-sub">{{ sub }}</p>
       </div>
@@ -170,7 +170,7 @@ const noteLabel = { notice: 'Notice', key: 'Key idea', good: 'Good to know', war
       </div>
       <div v-if="metrics.length" class="sc-metrics">
         <div v-for="[k, lab] in metrics" :key="k" class="sc-metric" :class="metricVal(k)?.[1]">
-          <span>{{ lab }}</span><b>{{ metricVal(k)?.[0] ?? '—' }}</b>
+          <span>{{ lab }}</span><b>{{ metricVal(k)?.[0] ?? '-' }}</b>
         </div>
       </div>
       <svg class="sc-svg" :viewBox="vb.map(v => v.toFixed(1)).join(' ')" preserveAspectRatio="xMidYMid meet" role="img" :aria-label="title">

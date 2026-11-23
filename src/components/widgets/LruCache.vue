@@ -1,7 +1,7 @@
 <script setup>
 // LRU cache = hash map + doubly linked list. Shows the list, the map, hit rate and evictions.
 import { ref } from 'vue'
-const cap = ref(4), list = ref([]), key = ref('A'), msg = ref('Try a workload: A B C D A E — B gets evicted, not A.'), hits = ref(0), miss = ref(0)
+const cap = ref(4), list = ref([]), key = ref('A'), msg = ref('Try a workload: A B C D A E, B gets evicted, not A.'), hits = ref(0), miss = ref(0)
 function access(k = key.value.trim().toUpperCase()) {
   if (!k) return; const i = list.value.indexOf(k)
   if (i >= 0) { list.value.splice(i, 1); list.value.unshift(k); hits.value++; msg.value = `get(${k}) HIT → map gives node in O(1); unlink it and move to head.` }

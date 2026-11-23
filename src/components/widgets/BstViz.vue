@@ -1,7 +1,7 @@
 <script setup>
 // BST vs AVL: insert keys and watch an unbalanced BST degrade while AVL rotates to stay O(log n).
 import { ref, computed } from 'vue'
-const avl = ref(true), root = ref(null), val = ref(50), msg = ref('Insert 10, 20, 30, 40, 50 in order — compare plain BST vs AVL.'), searchPath = ref([])
+const avl = ref(true), root = ref(null), val = ref(50), msg = ref('Insert 10, 20, 30, 40, 50 in order, compare plain BST vs AVL.'), searchPath = ref([])
 const h = n => n ? n.h : 0, upd = n => { n.h = 1 + Math.max(h(n.l), h(n.r)); return n }
 const rotR = y => { const x = y.l; y.l = x.r; x.r = y; upd(y); return upd(x) }
 const rotL = x => { const y = x.r; x.r = y.l; y.l = x; upd(x); return upd(y) }
@@ -20,7 +20,7 @@ function ins(n, v) {
 const clone = n => n && { ...n, l: clone(n.l), r: clone(n.r) }
 function insert(v = +val.value) { rot = []; root.value = ins(clone(root.value), v); msg.value = `insert ${v}. ${rot.join('; ') || 'no rotation needed'}. Height = ${h(root.value)}.`; val.value = Math.floor(Math.random() * 99) + 1; searchPath.value = [] }
 function search() { const v = +val.value, p = []; let n = root.value; while (n) { p.push(n.v); if (v === n.v) break; n = v < n.v ? n.l : n.r }
-  searchPath.value = p; msg.value = `search ${v}: visited ${p.join(' → ')} (${p.length} comparisons) — ${n ? 'found' : 'not found'}` }
+  searchPath.value = p; msg.value = `search ${v}: visited ${p.join(' → ')} (${p.length} comparisons), ${n ? 'found' : 'not found'}` }
 const layout = computed(() => { const nodes = [], edges = []; let i = 0
   const walk = (n, d, px, py) => { if (!n) return; walk(n.l, d + 1); const x = i++, y = d; nodes.push({ v: n.v, x, y, bal: h(n.l) - h(n.r), n }); walk(n.r, d + 1) }
   walk(root.value, 0); const pos = new Map(nodes.map(o => [o.n, o]))

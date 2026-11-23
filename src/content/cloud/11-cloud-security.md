@@ -1,14 +1,14 @@
 ---
-title: Cloud Security — IAM, Secrets, Guardrails and Compliance
-summary: Securing what you run in AWS, GCP or Azure — the shared responsibility model, how cloud accounts actually get breached, designing IAM with roles and least privilege, organization-wide guardrails, secrets and key management, network exposure, detection with audit logs, posture management, and what compliance frameworks like SOC 2 and PCI DSS ask of engineers.
+title: Cloud Security: IAM, Secrets, Guardrails and Compliance
+summary: Securing what you run in AWS, GCP or Azure, the shared responsibility model, how cloud accounts actually get breached, designing IAM with roles and least privilege, organization-wide guardrails, secrets and key management, network exposure, detection with audit logs, posture management, and what compliance frameworks like SOC 2 and PCI DSS ask of engineers.
 ---
 
-::widget Scene {"title": "Leaked access keys vs short-lived roles", "sub": "the same mistake, two very different outcomes", "nodes": [{"id": "dev", "kind": "laptop", "label": "Developer", "x": 3.72, "y": 3.72}, {"id": "gh", "kind": "cloud", "label": "Public GitHub repo", "x": 4.5, "y": -4.5, "color": "red"}, {"id": "bot", "kind": "user", "label": "Scanner bot", "x": 9.0, "y": -9.0, "color": "red"}, {"id": "acct", "kind": "server", "label": "Cloud account", "x": 15.2, "y": -2.8, "color": "blue"}, {"id": "sts", "kind": "cube", "label": "Role / STS", "x": 11.94, "y": 2.94, "color": "green"}], "links": [["dev", "gh"], ["gh", "bot"], ["bot", "acct", {"dashed": true}], ["dev", "sts"], ["sts", "acct"]], "metrics": [["cred", "Credential"], ["life", "Valid for"], ["impact", "Impact"]], "steps": [{"short": "Key", "tag": "Before", "title": "A long-lived access key in a config file", "body": "<p>Admin permissions, never expires.</p>", "show": ["dev"], "metrics": {"cred": ["AKIA… (static)"], "life": ["forever"], "impact": ["—"]}}, {"short": "Push", "tag": "Mistake", "title": "Accidentally committed to a public repo", "body": "<p>It happens — .env files, notebooks, test scripts.</p>", "show": ["dev", "gh"], "flow": [["dev", "gh", "#ef4444", "git push"]]}, {"short": "Bot", "tag": "Exploit", "title": "Bots find it within minutes", "body": "<p>They scan every public commit for key patterns.</p>", "show": ["dev", "gh", "bot"], "flow": [["gh", "bot", "#ef4444", "found key"]], "metrics": {"impact": ["minutes to discovery"]}}, {"short": "Abuse", "tag": "Exploit", "title": "They launch hundreds of GPU instances for crypto mining", "body": "<p>…and download your data. The bill: lakhs of rupees overnight.</p>", "show": ["dev", "gh", "bot", "acct"], "flow": [["bot", "acct", "#ef4444", "RunInstances ×300"]], "set": {"acct": {"badge": "₹8 L bill"}}, "metrics": {"impact": ["data + money", "bad"]}}, {"short": "Roles", "tag": "Better", "title": "Instead: no static keys at all", "body": "<p>Developers log in through SSO; workloads assume roles. The platform issues short-lived credentials automatically.</p>", "show": ["dev", "sts", "acct"], "set": {"acct": {"badge": null}}, "flow": [["dev", "sts", "#22c55e", "SSO login"], ["sts", "acct", "#22c55e", "temp creds"]], "metrics": {"cred": ["temporary session"], "life": ["1 hour"], "impact": ["—"]}}, {"short": "Leak2", "tag": "Same mistake", "title": "Leaked temporary credentials expire within the hour", "body": "<p>And they're scoped to one role's permissions.</p>", "metrics": {"impact": ["small window, narrow scope", "good"]}}, {"short": "Least", "tag": "Least privilege", "title": "Least privilege on every role", "body": "<p>The thumbnail service can read one bucket, nothing else. Use access analysers to trim unused permissions.</p>"}, {"short": "Guard", "tag": "Guardrails", "title": "Guardrails catch the rest", "body": "<p>Secret scanning on push, org-wide policies (no public buckets, only approved regions), billing alerts, and threat detection on unusual API calls.</p>", "note": {"kind": "key", "text": "Prefer short-lived, narrowly scoped credentials from roles and SSO over static keys; add scanning, org policies and alerts as guardrails."}}]}
+::widget Scene {"title": "Leaked access keys vs short-lived roles", "sub": "the same mistake, two very different outcomes", "nodes": [{"id": "dev", "kind": "laptop", "label": "Developer", "x": 3.72, "y": 3.72}, {"id": "gh", "kind": "cloud", "label": "Public GitHub repo", "x": 4.5, "y": -4.5, "color": "red"}, {"id": "bot", "kind": "user", "label": "Scanner bot", "x": 9.0, "y": -9.0, "color": "red"}, {"id": "acct", "kind": "server", "label": "Cloud account", "x": 15.2, "y": -2.8, "color": "blue"}, {"id": "sts", "kind": "cube", "label": "Role / STS", "x": 11.94, "y": 2.94, "color": "green"}], "links": [["dev", "gh"], ["gh", "bot"], ["bot", "acct", {"dashed": true}], ["dev", "sts"], ["sts", "acct"]], "metrics": [["cred", "Credential"], ["life", "Valid for"], ["impact", "Impact"]], "steps": [{"short": "Key", "tag": "Before", "title": "A long-lived access key in a config file", "body": "<p>Admin permissions, never expires.</p>", "show": ["dev"], "metrics": {"cred": ["AKIA… (static)"], "life": ["forever"], "impact": ["-"]}}, {"short": "Push", "tag": "Mistake", "title": "Accidentally committed to a public repo", "body": "<p>It happens, .env files, notebooks, test scripts.</p>", "show": ["dev", "gh"], "flow": [["dev", "gh", "#ef4444", "git push"]]}, {"short": "Bot", "tag": "Exploit", "title": "Bots find it within minutes", "body": "<p>They scan every public commit for key patterns.</p>", "show": ["dev", "gh", "bot"], "flow": [["gh", "bot", "#ef4444", "found key"]], "metrics": {"impact": ["minutes to discovery"]}}, {"short": "Abuse", "tag": "Exploit", "title": "They launch hundreds of GPU instances for crypto mining", "body": "<p>…and download your data. The bill: lakhs of rupees overnight.</p>", "show": ["dev", "gh", "bot", "acct"], "flow": [["bot", "acct", "#ef4444", "RunInstances ×300"]], "set": {"acct": {"badge": "₹8 L bill"}}, "metrics": {"impact": ["data + money", "bad"]}}, {"short": "Roles", "tag": "Better", "title": "Instead: no static keys at all", "body": "<p>Developers log in through SSO; workloads assume roles. The platform issues short-lived credentials automatically.</p>", "show": ["dev", "sts", "acct"], "set": {"acct": {"badge": null}}, "flow": [["dev", "sts", "#22c55e", "SSO login"], ["sts", "acct", "#22c55e", "temp creds"]], "metrics": {"cred": ["temporary session"], "life": ["1 hour"], "impact": ["-"]}}, {"short": "Leak2", "tag": "Same mistake", "title": "Leaked temporary credentials expire within the hour", "body": "<p>And they're scoped to one role's permissions.</p>", "metrics": {"impact": ["small window, narrow scope", "good"]}}, {"short": "Least", "tag": "Least privilege", "title": "Least privilege on every role", "body": "<p>The thumbnail service can read one bucket, nothing else. Use access analysers to trim unused permissions.</p>"}, {"short": "Guard", "tag": "Guardrails", "title": "Guardrails catch the rest", "body": "<p>Secret scanning on push, org-wide policies (no public buckets, only approved regions), billing alerts, and threat detection on unusual API calls.</p>", "note": {"kind": "key", "text": "Prefer short-lived, narrowly scoped credentials from roles and SSO over static keys; add scanning, org policies and alerts as guardrails."}}]}
 
 
 ## A key on GitHub, a bill for ₹40 lakh
 
-> [!STORY] A developer pushes a small side project to a public GitHub repository. Buried in a config file is an AWS access key with administrator permissions. Within minutes — before the developer has even closed their laptop — automated bots find the key, log in, and start hundreds of GPU instances across every region to mine cryptocurrency. By morning, the bill is tens of thousands of dollars. Stories like this happen every week. In the cloud, the most common breaches aren't sophisticated attacks on the provider's infrastructure; they're **misconfigurations and leaked credentials** in the customer's own account.
+> [!STORY] A developer pushes a small side project to a public GitHub repository. Buried in a config file is an AWS access key with administrator permissions. Within minutes, before the developer has even closed their laptop, automated bots find the key, log in, and start hundreds of GPU instances across every region to mine cryptocurrency. By morning, the bill is tens of thousands of dollars. Stories like this happen every week. In the cloud, the most common breaches aren't sophisticated attacks on the provider's infrastructure; they're **misconfigurations and leaked credentials** in the customer's own account.
 
 ## The shared responsibility model
 
@@ -20,24 +20,24 @@ The more managed the service, the more the provider handles: for a VM you patch 
 
 ## How cloud accounts actually get breached
 
-1. **Leaked long-lived credentials** — keys in code, CI logs, laptops, Docker images.
-2. **Over-permissive IAM** — roles with `*:*`, letting one compromised component reach everything.
-3. **Public exposure** — storage buckets, databases, admin panels or snapshots open to the internet.
-4. **Application vulnerabilities** used to reach cloud credentials — SSRF to the metadata service (Capital One — chapter 5).
-5. **Compromised human accounts** — phished console logins without strong MFA.
+1. **Leaked long-lived credentials** keys in code, CI logs, laptops, Docker images.
+2. **Over-permissive IAM** roles with `*:*`, letting one compromised component reach everything.
+3. **Public exposure** storage buckets, databases, admin panels or snapshots open to the internet.
+4. **Application vulnerabilities** used to reach cloud credentials, SSRF to the metadata service (Capital One, chapter 5).
+5. **Compromised human accounts** phished console logins without strong MFA.
 6. **Unpatched, internet-facing VMs.**
 
 The defenses below map directly onto these.
 
 ## IAM: the new perimeter
 
-In the cloud, **identity is the perimeter** — every API call is authorized by IAM, so IAM design matters more than any firewall.
+In the cloud, **identity is the perimeter** every API call is authorized by IAM, so IAM design matters more than any firewall.
 
 ### Principles
 
 - **No long-lived keys** for workloads. Use **roles**: EC2 instance profiles, EKS IRSA / Pod Identity, GKE Workload Identity, Lambda execution roles. Credentials are short-lived and rotated automatically.
 - **No long-lived keys for CI either:** GitHub Actions and other CI systems can exchange their **OIDC token** for short-lived cloud credentials (workload identity federation).
-- **Humans use SSO** (IAM Identity Center, Google Workspace/Entra ID) with phishing-resistant MFA, assuming roles per task — never personal access keys.
+- **Humans use SSO** (IAM Identity Center, Google Workspace/Entra ID) with phishing-resistant MFA, assuming roles per task, never personal access keys.
 - **Least privilege:** start narrow; use access analysers and "last used" data to remove unused permissions.
 - **Separate accounts/projects** per environment and workload, so a mistake or breach in one can't touch others (the strongest boundary the cloud offers).
 - Protect the **root/owner account** with hardware MFA and never use it day to day.
@@ -58,7 +58,7 @@ In the cloud, **identity is the perimeter** — every API call is authorized by 
 
 Individual policies can be wrong; **guardrails** apply to every account and can't be overridden by account admins:
 
-::widget Stepper {"type":"layers","title":"Layers of cloud guardrails, from organization down to resource","what":"Controls that apply at each level of a cloud organization. Higher layers set limits that lower layers cannot exceed.","steps":["Press Play from the top (the whole organization) down.","For each layer, think of one mistake it would prevent.","Find the layer that would have stopped the crypto-mining story."],"nodes":[["Organization policies (SCPs / Org Policy)","Hard limits for every account: 'no one may disable CloudTrail', 'only these regions may be used', 'no public S3 buckets', 'no IAM user access keys', 'no GPU instances outside the ML account'. Even an account administrator can't override them."],["Account structure","Separate accounts/projects for production, staging, development, security tooling, logging and each workload. Logs and backups live in accounts few people can access."],["Identity and roles","SSO with MFA for people; roles for workloads; permission boundaries so teams can create roles without escalating beyond limits."],["Network","Private subnets by default, no public IPs on servers, security groups referencing each other, private endpoints for cloud services, egress controls (chapter 5)."],["Resource policies and encryption","Bucket and key policies, block public access, encryption with KMS keys whose use is logged, object lock for backups."],["Detection","Audit logs from every account, threat detection, posture scanning and alerts — the safety net when everything above has a gap."]]}
+::widget Stepper {"type":"layers","title":"Layers of cloud guardrails, from organization down to resource","what":"Controls that apply at each level of a cloud organization. Higher layers set limits that lower layers cannot exceed.","steps":["Press Play from the top (the whole organization) down.","For each layer, think of one mistake it would prevent.","Find the layer that would have stopped the crypto-mining story."],"nodes":[["Organization policies (SCPs / Org Policy)","Hard limits for every account: 'no one may disable CloudTrail', 'only these regions may be used', 'no public S3 buckets', 'no IAM user access keys', 'no GPU instances outside the ML account'. Even an account administrator can't override them."],["Account structure","Separate accounts/projects for production, staging, development, security tooling, logging and each workload. Logs and backups live in accounts few people can access."],["Identity and roles","SSO with MFA for people; roles for workloads; permission boundaries so teams can create roles without escalating beyond limits."],["Network","Private subnets by default, no public IPs on servers, security groups referencing each other, private endpoints for cloud services, egress controls (chapter 5)."],["Resource policies and encryption","Bucket and key policies, block public access, encryption with KMS keys whose use is logged, object lock for backups."],["Detection","Audit logs from every account, threat detection, posture scanning and alerts, the safety net when everything above has a gap."]]}
 
 The story above would have been stopped at several layers: an org policy forbidding IAM user access keys, a region restriction, a GPU limit outside the ML account, and a billing anomaly alert.
 
@@ -67,7 +67,7 @@ The story above would have been stopped at several layers: an org policy forbidd
 - **Secrets managers** (AWS Secrets Manager, GCP Secret Manager, Azure Key Vault, HashiCorp Vault): store database passwords and API keys; inject at runtime; **rotate automatically**.
 - **KMS** for encryption keys with envelope encryption (Security track, chapter 2); restrict and log every use of a key.
 - **Secret scanning** in repositories and CI (GitHub secret scanning, gitleaks, trufflehog); pre-commit hooks.
-- If a secret leaks: **revoke/rotate first**, then investigate what it was used for in audit logs (Security track, chapter 8).
+- If a secret leaks: **revoke/rotate first** then investigate what it was used for in audit logs (Security track, chapter 8).
 
 ## Network exposure
 
@@ -79,8 +79,8 @@ The story above would have been stopped at several layers: an org policy forbidd
 ## Detection and response
 
 - **Audit logs everywhere:** CloudTrail / Cloud Audit Logs / Azure Activity Log for every account and region, shipped to a dedicated, locked-down logging account.
-- **Threat detection:** GuardDuty, Security Command Center, Microsoft Defender for Cloud — flag unusual API calls, credential use from new locations, crypto-mining, known malicious IPs.
-- **Billing anomaly alerts** — often the fastest signal of abuse.
+- **Threat detection:** GuardDuty, Security Command Center, Microsoft Defender for Cloud, flag unusual API calls, credential use from new locations, crypto-mining, known malicious IPs.
+- **Billing anomaly alerts** often the fastest signal of abuse.
 - Playbooks for common incidents: leaked key, public bucket, compromised instance.
 
 ## Posture management and policy as code
@@ -88,27 +88,27 @@ The story above would have been stopped at several layers: an org policy forbidd
 Hundreds of accounts and thousands of resources can't be checked by hand.
 
 - **Cloud security posture management (CSPM)** continuously scans for misconfigurations: public buckets, unencrypted volumes, security groups open to `0.0.0.0/0`, unused admin roles (AWS Security Hub, Wiz, Prisma Cloud, open-source Prowler).
-- **Policy as code in CI:** check Terraform plans before they're applied (Checkov, tfsec/Trivy, OPA/Conftest) — "this change would make a bucket public" fails the pull request.
+- **Policy as code in CI:** check Terraform plans before they're applied (Checkov, tfsec/Trivy, OPA/Conftest), "this change would make a bucket public" fails the pull request.
 - **Kubernetes admission policies** (Kyverno, OPA Gatekeeper): reject privileged containers, unsigned images, missing resource limits.
 
-> [!EXAMPLE] **Shifting left.** A developer opens a pull request adding an S3 bucket for user uploads. CI runs `terraform plan` and Checkov, which flags that the bucket lacks block-public-access and encryption settings. The developer fixes it before merging. The misconfiguration never reaches production — far cheaper than finding it in a breach report.
+> [!EXAMPLE] **Shifting left.** A developer opens a pull request adding an S3 bucket for user uploads. CI runs `terraform plan` and Checkov, which flags that the bucket lacks block-public-access and encryption settings. The developer fixes it before merging. The misconfiguration never reaches production, far cheaper than finding it in a breach report.
 
 ## Compliance: what engineers need to know
 
 Customers and regulators often require certifications. They mostly formalize the practices above:
 
-- **SOC 2:** controls for security, availability and confidentiality, audited over time — access reviews, change management, logging, incident response, vendor management.
+- **SOC 2:** controls for security, availability and confidentiality, audited over time, access reviews, change management, logging, incident response, vendor management.
 - **ISO 27001:** an information security management system with risk assessments and controls.
-- **PCI DSS:** for card payment data — minimize scope (tokenize cards so most systems never see them), segment networks, encrypt, log and test.
+- **PCI DSS:** for card payment data, minimize scope (tokenize cards so most systems never see them), segment networks, encrypt, log and test.
 - **HIPAA** (US health data), **GDPR** (EU personal data), India's **DPDP Act**: data minimization, consent, deletion rights, breach notification, sometimes data residency.
 
 Engineering habits that make audits easy: everything in infrastructure as code, peer-reviewed changes, centralized logs, automated evidence collection, and least-privilege access with regular reviews.
 
 > [!RECAP]
-> - **Shared responsibility:** the provider secures the cloud; you secure what's in it — and most breaches are customer misconfigurations and leaked credentials.
+> - **Shared responsibility:** the provider secures the cloud; you secure what's in it, and most breaches are customer misconfigurations and leaked credentials.
 > - **IAM is the perimeter:** roles not keys, CI via OIDC federation, SSO + MFA for humans, least privilege, separate accounts.
 > - **Guardrails:** organization policies, account structure, permission boundaries, private networking, encryption, detection.
-> - **Secrets managers and KMS**, secret scanning, rotate on leak.
+> - **Secrets managers and KMS** secret scanning, rotate on leak.
 > - **Detect** with audit logs, threat detection and billing anomalies; **prevent** with CSPM and policy as code in CI.
 > - **Compliance** (SOC 2, ISO 27001, PCI DSS, GDPR/DPDP) formalizes the same practices.
 

@@ -62,3 +62,31 @@ export function renderChapter(body) {
   const toc = [...body.matchAll(/^(##|###) (.+)$/gm)].map(([, h, t]) => ({ level: h.length, text: t.replace(/[*`]/g, ''), id: slugify(t.replace(/[*`]/g, '')) }))
   return { segs, toc }
 }
+
+// ---- cheat sheets: distilled from each chapter's own recap, lesson key ideas, tables, quizzes ----
+export function cheatsheet(body) {
+  const lines = body.split('\n')
+  const out = { recap: [], interview: '', tables: [], keys: [], quiz: [], terms: [] }
+  let section = '', inFence = false
+  for (let i = 0; i < lines.length; i++) {
+    const l = lines[i]
+    if (l.startsWith('```')) { inFence = !inFence; continue }
+    if (inFence) continue
+    const h = l.match(/^##\s+(.+)/); if (h) section = h[1].replace(/[*`]/g, '')
+    if (/^> \[!RECAP\]/.test(l)) { let j = i + 1; while (j < lines.length && lines[j].startsWith('>')) { const b = lines[j].replace(/^>\s?-?\s?/, '').trim(); if (b) out.recap.push(b); j++ } i = j - 1; continue }
+    if (/^> \[!INTERVIEW\]/.test(l)) { out.interview = l.replace(/^> \[!INTERVIEW\]\s*/, ''); continue }
+    if (l.startsWith('|') && !(lines[i - 1] || '').startsWith('|')) {
+      let j = i; const rows = []; while (j < lines.length && lines[j].startsWith('|')) rows.push(lines[j++])
+      const html = md.render(rows.join('\n'))
+      if (/glossary|term/i.test(section) || /\|\s*Term\s*\|/i.test(rows[0])) out.terms.push(html); else out.tables.push({ section, html })
+      i = j - 1; continue
+    }
+    const w = l.match(/^::widget Scene (\{.*\})\s*$/)
+    if (w) { try { const p = JSON.parse(w[1]); for (const s of p.steps || []) if (s.note?.kind === 'key') out.keys.push({ lesson: p.title, text: s.note.text }) } catch {} }
+    const q = l.match(/^::quiz (\{.*\})\s*$/)
+    if (q) { try { const p = JSON.parse(q[1]); out.quiz.push({ q: p.q, a: p.options[p.answer], why: p.explain }) } catch {} }
+  }
+  const inline = s => md.renderInline(s)
+  out.recap = out.recap.map(inline); out.interview = out.interview && inline(out.interview)
+  return out
+}

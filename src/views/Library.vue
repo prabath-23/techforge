@@ -47,7 +47,7 @@ onBeforeUnmount(() => { removeEventListener('keydown', onEsc); document.body.sty
     <div class="lib-controls" v-if="mode !== 'saved'">
       <template v-if="mode === 'feeds'">
         <select v-model="topic" @change="loadFeeds"><option v-for="[v, l] in TOPICS" :key="v" :value="v">{{ l }}</option></select>
-        <input v-model="filter" placeholder="Filter by keyword — kernel, Kafka, RAG…" @keyup.enter="loadFeeds" />
+        <input v-model="filter" placeholder="Filter by keyword, kernel, Kafka, RAG…" @keyup.enter="loadFeeds" />
         <details class="src-pick"><summary><Icon name="filter" :size="14" />&nbsp;Sources ({{ picked.length || 'all' }})</summary>
           <div><label v-for="s in sources" :key="s.id"><input v-model="picked" type="checkbox" :value="s.id" /> {{ s.name }}</label>
             <button class="btn small" style="margin-top:8px" @click="loadFeeds">Apply</button></div>
@@ -85,7 +85,7 @@ onBeforeUnmount(() => { removeEventListener('keydown', onEsc); document.body.sty
             <a v-if="it.hn" :href="it.hn" target="_blank" rel="noopener" class="link">{{ it.comments }} comments</a>
           </div>
         </article>
-        <div v-if="!loading && !shown.length && mode !== 'url'" class="empty">{{ mode === 'saved' ? 'Nothing saved yet — use “Save” on any article.' : 'No articles found.' }}</div>
+        <div v-if="!loading && !shown.length && mode !== 'url'" class="empty">{{ mode === 'saved' ? 'Nothing saved yet, use “Save” on any article.' : 'No articles found.' }}</div>
       </div>
       <div v-if="article" class="reader-overlay" role="dialog" aria-modal="true">
         <button class="icon close" @click="article = null" aria-label="Close article"><Icon name="x" :size="18" /></button>
@@ -97,7 +97,7 @@ onBeforeUnmount(() => { removeEventListener('keydown', onEsc); document.body.sty
           <button class="link" @click="toggleSave(article)"><Icon :name="isSaved(article) ? 'bookmarked' : 'bookmark'" :size="14" /> {{ isSaved(article) ? 'Saved' : 'Save' }}</button>
         </div>
         <template v-if="artLoading"><div class="skeleton" style="margin-top:20px;height:16px" v-for="n in 8" :key="n"></div></template>
-        <p v-if="artErr" class="err">{{ artErr }} — open the original instead.</p>
+        <p v-if="artErr" class="err">{{ artErr }}, open the original instead.</p>
         <div class="prose" v-html="article.content"></div>
         </div>
       </div>

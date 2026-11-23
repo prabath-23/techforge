@@ -1,6 +1,6 @@
 <script setup>
 // Illustrated step-through diagram. type: flow | layers | cycle | hub | tree
-// nodes: [[label, detail, icon?], ...] — each node gets an icon (auto-picked from its label) and a color.
+// nodes: [[label, detail, icon?], ...], each node gets an icon (auto-picked from its label) and a color.
 import { ref, computed, onUnmounted } from 'vue'
 import { iconFor, PALETTE } from './diagramIcons.js'
 const p = defineProps({ title: String, type: { type: String, default: 'flow' }, nodes: Array, cols: { type: Number, default: 3 } })

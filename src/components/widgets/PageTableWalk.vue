@@ -19,10 +19,10 @@ function translate() {
   const frame = fakeFrame(a.vpn), phys = '0x' + ((BigInt(frame) << 12n) | BigInt(a.off)).toString(16)
   if (hit) { stats.value.hits++; log.value = [`TLB HIT for VPN 0x${a.vpn.toString(16)} → frame 0x${frame.toString(16)}`, `Physical address = ${phys}. Cost: ~1 cycle. No memory accesses for translation.`]; step.value = 9; return }
   stats.value.misses++
-  log.value = [`TLB MISS for VPN 0x${a.vpn.toString(16)} — hardware page walker starts at CR3.`,
+  log.value = [`TLB MISS for VPN 0x${a.vpn.toString(16)}, hardware page walker starts at CR3.`,
     `CR3 → PML4 table base. Read entry [${a.pml4}] → physical address of a PDPT. (memory access 1)`,
-    `PDPT[${a.pdpt}] → address of a Page Directory. (memory access 2) — a 1 GiB huge page would stop here.`,
-    `PD[${a.pd}] → address of a Page Table. (memory access 3) — a 2 MiB huge page would stop here.`,
+    `PDPT[${a.pdpt}] → address of a Page Directory. (memory access 2), a 1 GiB huge page would stop here.`,
+    `PD[${a.pd}] → address of a Page Table. (memory access 3), a 2 MiB huge page would stop here.`,
     `PT[${a.pt}] → PTE: present=1, frame=0x${frame.toString(16)}, R/W, U/S, NX bits checked. (memory access 4)`,
     `Physical = (frame << 12) | offset 0x${a.off.toString(16)} = ${phys}. Entry inserted into the TLB.`]
   tlb.value = [a.vpn.toString(), ...tlb.value.filter(x => x !== a.vpn.toString())].slice(0, 4)
