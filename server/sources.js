@@ -1,0 +1,28 @@
+// Curated engineering sources. Add your own: { id, name, feed, topics: [...] }
+// topics: os, networking, distributed, cloud, ai, dsa, practices, security, general
+export const SOURCES = [
+  { id: 'hn', name: 'Hacker News (front page)', feed: 'https://hnrss.org/frontpage?points=100', topics: ['general'] },
+  { id: 'lwn', name: 'LWN.net (Linux kernel)', feed: 'https://lwn.net/headlines/rss', topics: ['os'] },
+  { id: 'kernelnewbies', name: 'Phoronix', feed: 'https://www.phoronix.com/rss.php', topics: ['os'] },
+  { id: 'juliaevans', name: 'Julia Evans', feed: 'https://jvns.ca/atom.xml', topics: ['os', 'networking'] },
+  { id: 'brendangregg', name: 'Brendan Gregg (performance)', feed: 'https://www.brendangregg.com/blog/rss.xml', topics: ['os'] },
+  { id: 'cloudflare', name: 'Cloudflare Blog', feed: 'https://blog.cloudflare.com/rss/', topics: ['networking', 'security', 'distributed'] },
+  { id: 'apnic', name: 'APNIC Blog (internet infra)', feed: 'https://blog.apnic.net/feed/', topics: ['networking'] },
+  { id: 'netflix', name: 'Netflix TechBlog', feed: 'https://netflixtechblog.com/feed', topics: ['distributed', 'cloud'] },
+  { id: 'uber', name: 'Uber Engineering', feed: 'https://www.uber.com/blog/engineering/rss/', topics: ['distributed'] },
+  { id: 'meta', name: 'Engineering at Meta', feed: 'https://engineering.fb.com/feed/', topics: ['distributed', 'ai'] },
+  { id: 'aws-arch', name: 'AWS Architecture Blog', feed: 'https://aws.amazon.com/blogs/architecture/feed/', topics: ['cloud', 'distributed'] },
+  { id: 'allthingsdist', name: 'All Things Distributed (Werner Vogels)', feed: 'https://www.allthingsdistributed.com/index.xml', topics: ['distributed', 'cloud'] },
+  { id: 'bytebytego', name: 'ByteByteGo', feed: 'https://blog.bytebytego.com/feed', topics: ['distributed'] },
+  { id: 'murat', name: 'Metadata (Murat Demirbas, papers)', feed: 'https://muratbuffalo.blogspot.com/feeds/posts/default', topics: ['distributed'] },
+  { id: 'k8s', name: 'Kubernetes Blog', feed: 'https://kubernetes.io/feed.xml', topics: ['cloud'] },
+  { id: 'github', name: 'GitHub Engineering', feed: 'https://github.blog/engineering/feed/', topics: ['practices', 'cloud'] },
+  { id: 'fowler', name: 'Martin Fowler', feed: 'https://martinfowler.com/feed.atom', topics: ['practices'] },
+  { id: 'pragmatic', name: 'The Pragmatic Engineer', feed: 'https://blog.pragmaticengineer.com/rss/', topics: ['practices'] },
+  { id: 'hf', name: 'Hugging Face Blog', feed: 'https://huggingface.co/blog/feed.xml', topics: ['ai'] },
+  { id: 'simonw', name: 'Simon Willison (LLMs)', feed: 'https://simonwillison.net/atom/everything/', topics: ['ai'] },
+  { id: 'lilian', name: 'Lil’Log (Lilian Weng)', feed: 'https://lilianweng.github.io/index.xml', topics: ['ai'] },
+  { id: 'googleai', name: 'Google Research Blog', feed: 'https://research.google/blog/rss/', topics: ['ai'] },
+  { id: 'krebs', name: 'Krebs on Security', feed: 'https://krebsonsecurity.com/feed/', topics: ['security'] },
+  { id: 'cp-algo', name: 'Codeforces Blog', feed: 'https://codeforces.com/blog/entry/rss', topics: ['dsa'] },
+]

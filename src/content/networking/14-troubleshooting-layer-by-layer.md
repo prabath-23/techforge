@@ -1,0 +1,89 @@
+---
+title: Troubleshooting a Network, Layer by Layer
+summary: A practical method for diagnosing "the network is broken" — using the layered model as a checklist, the questions that narrow a problem down fast, four detailed real-world cases (a DNS change, an MTU black hole, intermittent timeouts from conntrack exhaustion, and a slow cross-region link), and how to communicate findings.
+---
+
+## "It's always DNS"
+
+> [!STORY] There's a well-known engineering haiku: *"It's not DNS. There's no way it's DNS. It was DNS."* Network problems are frustrating because the symptom — "it's slow", "it times out", "it works for me" — is far away from the cause, which might be a typo in a DNS record, a firewall rule, a packet-size limit, a full connection table, or a congested link on another continent. Experienced engineers don't guess. They use the **layered model** as a checklist, ask a few questions that cut the problem space in half, and test one layer at a time.
+
+The tools are covered in the Linux track (chapter 6). This chapter is about the **method**, with worked cases.
+
+## Step 1: describe the problem precisely
+
+Before running any command, pin down:
+
+- **What exactly fails?** An error message, a timeout, slowness, or wrong data?
+- **Who is affected?** One user, one office, one region, one app version, everyone?
+- **Since when?** What changed around that time — a deploy, a config change, a certificate renewal, a provider incident?
+- **Always or sometimes?** Intermittent problems point to capacity, load balancing across a bad backend, or timeouts — not to plain misconfiguration.
+- **From where to where?** Client → load balancer, service → database, office → cloud?
+
+> [!ANALOGY] A doctor's first questions: Where does it hurt? Since when? Does it hurt all the time or only when you move? Have you eaten anything unusual? The answers rule out most possible diagnoses before any test is ordered.
+
+## Step 2: walk the layers
+
+::widget Stepper {"type":"layers","title":"A troubleshooting checklist, bottom to top","what":"The layers of a network connection, each with the question to ask and how to check it. Work from the bottom up; stop at the first layer that fails.","steps":["Press Play to see every layer.","For a 'timeout connecting to the database' report, decide which layers you'd check first.","Notice how 'refused' and 'timeout' point to different layers."],"nodes":[["Application","Does the service itself work? Check its logs, health endpoints and recent deploys. Is the error actually from the network at all?"],["TLS","Is the certificate valid, unexpired, for the right name, with the full chain? openssl s_client, curl -v."],["Transport (TCP/UDP)","Can a connection be opened? Refused = reached the host but nothing listening; timeout = something drops packets. nc -vz, ss on the server."],["Routing and firewalls","Is there a route both ways? Do security groups, network ACLs, host firewalls and network policies allow it — in BOTH directions? traceroute/mtr, flow logs."],["Name resolution","Does the name resolve to the right address from where the client is? dig, getent hosts, check /etc/hosts and the resolver in use."],["Local link and addressing","Is the interface up with the right IP, gateway and DNS server? ip addr, ip route, DHCP leases. Is Wi-Fi or the VPN connected?"]]}
+
+### Cutting the problem in half
+
+- **Compare working vs failing:** works from one server but not another? Same request, different result → diff their DNS, routes, firewall rules and versions.
+- **Bypass layers:** use the IP directly instead of the name (`curl --resolve`), hit a backend directly instead of the load balancer, test from inside the same subnet.
+- **Look at both ends:** capture packets on the client **and** the server (`tcpdump`). If the SYN leaves the client but never arrives at the server, the problem is in between.
+
+## Case 1: the DNS change that only half worked
+
+> [!EXAMPLE] **Symptom:** after migrating an API to a new load balancer, about 30% of customers still hit the old, now-shut-down servers and get timeouts — two days later.
+>
+> **Investigation:** `dig api.example.com` from the office shows the new address. `dig @8.8.8.8` too. But a customer's error logs show the old IP. The old record had a **TTL of 86,400 seconds (24 hours)**; some corporate resolvers enforce minimum cache times, and some customers' Java services cached DNS **forever** (older JVM default with a security manager).
+>
+> **Fix and lesson:** temporarily run the old IP as a redirect/proxy to the new one. Next time, lower the TTL days **before** a migration, keep the old endpoint alive through the transition, and configure clients to respect DNS TTLs.
+
+## Case 2: the MTU black hole
+
+> [!EXAMPLE] **Symptom:** after setting up a new VPN to a partner, small API calls work, but large responses hang forever. SSH connects, then freezes when output is long.
+>
+> **Investigation:** the handshake succeeds (small packets), but large packets vanish. The VPN adds ~60 bytes of headers, so 1,500-byte packets no longer fit the link's **MTU** (maximum packet size). Normally, routers send back ICMP "fragmentation needed" messages so senders shrink packets (**path MTU discovery**) — but a firewall was blocking **all** ICMP. Packets were silently dropped: a "black hole". `ping -M do -s 1472 host` (don't fragment) fails, while `-s 1400` works.
+>
+> **Fix and lesson:** allow ICMP "fragmentation needed" / "packet too big" messages, or set **MSS clamping** on the VPN gateway so TCP negotiates smaller segments. Blocking all ICMP breaks networks in subtle ways.
+
+## Case 3: intermittent timeouts under load
+
+> [!EXAMPLE] **Symptom:** during peak traffic, about 1% of requests from an API fleet to a payment provider time out on connect. Below peak, there are none.
+>
+> **Investigation:** the provider's status is green. On an API host, `dmesg` shows `nf_conntrack: table full, dropping packet`. Every outgoing connection uses an entry in the kernel's connection-tracking table (used by the stateful firewall and NAT); a burst of short-lived connections — the client opened a **new TCP and TLS connection per request** — filled it. A similar issue appears with **NAT gateway port exhaustion** in clouds and with ephemeral port exhaustion (`TIME_WAIT` build-up).
+>
+> **Fix and lesson:** reuse connections with **keep-alive and connection pooling** (also saving a TLS handshake per request), raise conntrack limits appropriately, and monitor conntrack usage and NAT gateway port allocation errors. Intermittent, load-dependent problems usually mean a **limit** somewhere is being hit.
+
+## Case 4: slow transfers between regions
+
+> [!EXAMPLE] **Symptom:** nightly backups from Mumbai to a bucket in Frankfurt take 9 hours instead of the expected 1, though the link is rated at 10 Gbps.
+>
+> **Investigation:** `mtr` shows ~120 ms round-trip time and 0.1% packet loss. A single TCP connection's throughput is limited by **window size ÷ RTT**, and loss makes congestion control cut its speed sharply (Networking chapter 5 — try the congestion-control figure there). One stream over a long, slightly lossy path simply can't fill a 10 Gbps pipe.
+>
+> **Fix and lesson:** use **parallel streams** (multipart uploads, `aws s3 cp` with higher concurrency), make sure TCP window scaling and buffers are large enough, consider **BBR** congestion control, and transfer only changed data. High bandwidth doesn't help much when latency and loss dominate.
+
+## Step 3: communicate clearly
+
+When you report a network problem — to another team or a provider — include:
+
+- Exact source and destination (IPs, ports, names), and the time window with time zone.
+- What you observed at each layer: "DNS resolves to X, TCP connect times out from subnet A but succeeds from subnet B, packet capture shows SYNs leaving with no SYN-ACK."
+- What changed recently, and what you've already ruled out.
+
+A report like that gets fixed in an hour; "the network is slow" gets bounced around for days.
+
+> [!RECAP]
+> - Start by **describing the problem precisely**: what, who, since when, how often, from where to where.
+> - **Walk the layers** bottom up: link, DNS, routing/firewalls, transport, TLS, application.
+> - **Cut the problem in half**: compare working vs failing, bypass layers, capture on both ends.
+> - Classic causes: **DNS caching**, **MTU black holes** from blocked ICMP, **connection-table / port exhaustion** under load, and **latency × loss** limiting throughput.
+> - Report findings with specifics, timestamps and evidence per layer.
+
+> [!INTERVIEW] "Users report the site is slow / timing out — walk me through how you'd debug it" is one of the most common SRE and senior backend questions. Show a structured, layered approach and mention concrete checks and tools.
+
+::quiz {"q":"Small requests succeed through a new VPN but large responses hang. A likely cause?","options":["DNS failure","An MTU problem with blocked ICMP, so oversized packets are silently dropped","Expired certificate","Wrong port"],"answer":1,"explain":"Path MTU discovery needs ICMP 'packet too big' messages."}
+
+::quiz {"q":"Timeouts happen only at peak load, and dmesg says 'nf_conntrack: table full'. Best long-term fix?","options":["Restart servers nightly","Reuse connections (keep-alive, pooling) and size conntrack limits appropriately","Disable the firewall","Use UDP"],"answer":1,"explain":"One new connection per request exhausts tracking tables."}
+
+::quiz {"q":"Why might a single TCP stream between distant regions be slow on a 10 Gbps link?","options":["TCP is capped at 1 Gbps","Throughput is limited by window size ÷ round-trip time, and loss cuts it further","DNS is slow","TLS is disabled"],"answer":1,"explain":"Use parallel streams and tuned buffers."}
