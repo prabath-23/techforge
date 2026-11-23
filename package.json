@@ -9,7 +9,7 @@
     "api": "node server/index.js",
     "build": "vite build",
     "start": "vite build && NODE_ENV=production node server/index.js",
-    "deploy": "PAGES_BASE=/techforge/ vite build && cp dist/index.html dist/404.html && touch dist/.nojekyll && npx gh-pages@6.3.0 -d dist -t"
+    "deploy": "vite build && cp dist/index.html dist/404.html && touch dist/.nojekyll && npx gh-pages@6.3.0 -d dist -t"
   },
   "dependencies": {
     "@mozilla/readability": "^0.5.0",
