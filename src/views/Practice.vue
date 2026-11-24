@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, reactive, onBeforeUnmount, watch } from 'vue'
+import { ref, computed, reactive, onBeforeUnmount, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { PATTERNS, PROBLEMS, DESIGNS, DESIGN_SECTIONS, STORY_PROMPTS } from '../content/practice.js'
 import { state } from '../lib/progress.js'
@@ -30,7 +30,8 @@ const list = computed(() => PROBLEMS.filter(x => (pat.value === 'All' || x.patte
 const solvedCount = computed(() => PROBLEMS.filter(x => state.solved[x.id]).length)
 const patPct = p => { const all = PROBLEMS.filter(x => x.pattern === p); return Math.round(100 * all.filter(x => state.solved[x.id]).length / all.length) }
 const cur = ref(null), hintsShown = ref(0), showApproach = ref(false)
-const open = x => { cur.value = x; hintsShown.value = 0; showApproach.value = false; stopTimer(); timer.secs = 0 }
+const open = x => { cur.value = x; hintsShown.value = 0; showApproach.value = false; stopTimer(); timer.secs = 0
+  if (innerWidth <= 900) nextTick(() => document.querySelector('.code-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' })) }
 watch(tab, () => { stopTimer(); timer.secs = 0 })
 const lcUrl = x => `https://leetcode.com/problemset/?search=${encodeURIComponent(x.title)}`
 const markSolved = x => { if (state.solved[x.id]) delete state.solved[x.id]; else { state.solved[x.id] = { at: Date.now(), secs: timer.secs, hints: hintsShown.value } ; stopTimer() } }
